@@ -1,0 +1,94 @@
+
+
+
+# 项目概览
+
+本仓库是一个前后端分离的全栈项目：
+
+- 前端目录：`frontend-personal-home`
+- 前端技术栈：`pnpm + Vue 3 + Vite + TypeScript + Element Plus`
+- 后端目录：`backend-personal-home`
+- 后端技术栈：`Spring Boot 3 + Maven + Java 17 + PostgreSQL`
+
+# 目录约定
+
+- `frontend-personal-home`：前端应用代码、单元测试、E2E 测试
+- `backend-personal-home`：后端应用代码、接口测试、单元测试
+- 根目录：仅放置仓库级说明、协作规范与必要配置文件
+
+
+# 常见错误避免
+
+1. 在 Windows PowerShell 中编写命令时，禁止自定义变量名使用 `$PID`、`$PSVersionTable` 等内置只读或自动变量；涉及进程 ID 等场景时，统一使用 `$targetPid`、`$processId` 等非保留名称，避免出现变量不可写错误。
+
+
+
+# 开发原则
+
+1. 未明确要求时，不要重复造轮子，优先复用成熟库、官方组件、Spring / Vue 生态已有方案。
+2. 所有代码和注释统一按 UTF-8 读取与编写，避免中文乱码。
+3. 重要变量、核心函数、复杂逻辑必须添加中文注释，注释应解释“为什么这样做”以及关键约束。
+4. 前端代码必须符合 TypeScript 编码规范，优先保证类型完整，避免滥用 `any`。
+5. 后端数据库访问使用 Spring Data 技术栈实现。
+6. 修改现有代码前，如果对当前代码调用逻辑不清楚，必须先阅读相关代码，了解整体调用逻辑，然后再修改；如果已经清楚，可以直接修改。
+
+
+# 前端约束
+
+- 包管理器统一使用 `pnpm`
+- 前端开发目录固定为 `frontend-personal-home`
+- 优先复用现有 Vue 组件、组合式 API、Pinia、Vue Router 配置
+- 样式或页面改动应兼顾桌面端与移动端基本可用性
+- 新增逻辑时应补充必要的类型声明与中文注释
+
+# 后端约束
+
+- 后端开发目录固定为 `backend-personal-home`
+- 关键业务函数建议补充单元测试，确保行为符合预期
+- 提交前必须保证相关测试通过
+- 优先使用 Spring Boot 官方推荐方式组织配置、依赖注入、参数校验与测试
+
+# 常用命令
+
+## 前端
+
+在 `frontend-personal-home` 目录执行：
+
+```bash
+pnpm install
+pnpm dev
+pnpm build
+pnpm type-check
+pnpm lint
+pnpm test:unit
+pnpm test:e2e
+```
+
+## 后端
+
+在 `backend-personal-home` 目录执行：
+
+```bash
+./mvnw spring-boot:run
+./mvnw test
+./mvnw clean package
+```
+
+
+# 变更要求
+
+1. 涉及前端改动时，至少执行受影响范围内的类型检查、Lint 或测试。
+2. 不要顺手修复与当前任务无关的问题，除非它阻塞当前实现。
+3. 更新依赖、脚手架配置、构建流程时，应同步更新相关文档或说明。
+
+# Git 规则
+
+1. 未经明确要求，不要执行破坏性 Git 操作，如 `reset --hard`、强制覆盖、删除用户未确认内容。
+2. 分支合并默认使用 `--no-ff`，除非用户明确指定其他方式。
+3. 提交前先确认本次修改范围，避免把无关文件一起提交。
+
+# 协作建议
+
+- 开始实现前，先确认修改发生在 `frontend-personal-home`、`backend-personal-home` 还是两者联动。
+- 优先给出可验证的结果，例如测试通过、构建通过、接口可调用。
+- 如果发现仓库约束与实际结构不一致，应先说明差异，再继续修改。
