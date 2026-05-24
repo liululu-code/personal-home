@@ -1,9 +1,22 @@
+<template>
+  <el-container class="page-container">
+    <el-header>
+      <HeaderComponent />
+    </el-header>
+    <el-main>主页面</el-main>
+    <el-footer>
+      <FooterComponent />
+    </el-footer>
+  </el-container>
+</template>
+
 <script setup lang="ts">
-import TheWelcome from '../components/TheWelcome.vue'
+import FooterComponent from '@/components/FooterComponent.vue';
+import HeaderComponent from '@/components/HeaderComponent.vue';
 </script>
 
-<template>
-  <main>
-    <TheWelcome />
-  </main>
-</template>
+<style scoped lang="scss">
+.page-container {
+  height: 100vh;
+}
+</style>
