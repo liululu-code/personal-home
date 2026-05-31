@@ -14,8 +14,10 @@
     <servers>
         <server>
             <id>lll-nexus</id>
-            <username>${env.NEXUS_USERNAME}</username>
-            <password>${env.NEXUS_PASSWORD}</password>
+<!--            <username>${env.NEXUS_USERNAME}</username>-->
+<!--            <password>${env.NEXUS_PASSWORD}</password>-->
+            <username>admin</username>
+            <password>lll44556</password>
         </server>
     </servers>
 
