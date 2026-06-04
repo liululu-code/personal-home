@@ -8,6 +8,7 @@
         <version>3.5.6</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
+
     <groupId>top.lll44556</groupId>
     <artifactId>backend-personal-home</artifactId>
     <version>0.0.1-SNAPSHOT</version>
@@ -19,6 +20,9 @@
     <modules>
         <module>common</module>
         <module>home</module>
+        <module>auth</module>
+        <module>comic-read</module>
+        <module>code-template</module>
     </modules>
 
 
@@ -28,7 +32,9 @@
     </properties>
 
     <dependencyManagement>
-<!--        <dependencies>-->
+<!--        <dependencies>
+
+-->
 <!--            <dependency>-->
 <!--                <groupId>org.springframework.boot</groupId>-->
 <!--                <artifactId>spring-boot-starter-data-jpa</artifactId>-->
