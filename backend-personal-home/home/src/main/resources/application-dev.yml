@@ -7,12 +7,11 @@ spring:
     url: jdbc:postgresql://f117.lll44556.top:5005/personal_home?currentSchema=public
     username: lll
     password: lll44556
+    type: com.zaxxer.hikari.HikariDataSource
 
-#  jpa:
-#    hibernate:
-#      ddl-auto: none
-#    show-sql: true
-#    database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+
+
 
 
 

@@ -19,11 +19,14 @@ public class BaseEntity implements Serializable {
     @Column(name = "id", length = 32, nullable = false)
     private String id;
 
-    @Column(name = "create_time", nullable = false)
-    private Long createTime;
+    @Column(name = "created_time", nullable = false)
+    private Long createdTime;
 
-    @Column(name = "update_time")
-    private Long updateTime;
+    @Column(name = "updated_time")
+    private Long updatedTime;
+
+    @Column(name = "operator")
+    private String operator;
 
     @Column(name = "valid", nullable = false)
     private Integer valid;
@@ -36,12 +39,12 @@ public class BaseEntity implements Serializable {
             this.id = UUID.randomUUID().toString().replace("-", "");
         }
 
-        if (this.createTime == null) {
-            this.createTime = now;
+        if (this.createdTime == null) {
+            this.createdTime = now;
         }
 
-        if (this.updateTime == null) {
-            this.updateTime = now;
+        if (this.updatedTime == null) {
+            this.updatedTime = now;
         }
 
         if (this.valid == null) {
@@ -51,6 +54,6 @@ public class BaseEntity implements Serializable {
 
     @PreUpdate
     public void preUpdate() {
-        this.updateTime = System.currentTimeMillis();
+        this.updatedTime = System.currentTimeMillis();
     }
 }

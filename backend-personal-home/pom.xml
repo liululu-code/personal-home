@@ -21,6 +21,8 @@
         <module>common</module>
         <module>home</module>
         <module>auth</module>
+        <module>comic-read</module>
+        <module>code-template</module>
     </modules>
 
 
