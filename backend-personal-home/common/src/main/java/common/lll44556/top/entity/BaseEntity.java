@@ -1,4 +1,4 @@
-package common.lll44556.top.Entity;
+package common.lll44556.top.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;

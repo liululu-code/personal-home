@@ -1,6 +1,6 @@
 package top.lll44556.auth.entity;
 
-import common.lll44556.top.Entity.BaseEntity;
+import common.lll44556.top.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;

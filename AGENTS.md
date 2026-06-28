@@ -47,6 +47,9 @@
 - 关键业务函数建议补充单元测试，确保行为符合预期
 - 提交前必须保证相关测试通过
 - 优先使用 Spring Boot 官方推荐方式组织配置、依赖注入、参数校验与测试
+- 后端接口入参与出参统一使用 `vo` 包组织，不使用 `record`；例如代码生成模块放在 `src/main/java/top/lll44556/codeGenerator/vo/codeGenerator` 下，并按 `req`、`res` 子包区分请求与响应对象。
+- 后端 VO 类统一使用普通 `class`，并使用 Lombok 注解简化样板代码，至少包含 `@Data`、`@NoArgsConstructor`、`@AllArgsConstructor`，便于 Spring JSON 反序列化和后续字段扩展。
+- Controller 对外响应统一使用 `backend-personal-home/common/src/main/java/common/lll44556/top/util/R.java` 进行封装，例如返回 `R.ok(data)`，避免直接返回裸 VO。
 
 # 常用命令
 

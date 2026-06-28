@@ -22,18 +22,16 @@ public class DatabaseController {
     private final Configuration freemarkerConfig;
 
     /**
-     * test方法
+     * TODO: 旧测试接口仅用于验证 FreeMarker 可用，后续统一迁移到 /api/code-generator/generate。
      */
     @GetMapping("test")
     public void test() throws IOException, TemplateException {
-        // 模板
+        // TODO: 后续删除文件落盘行为，避免测试接口在项目根目录生成临时文件。
         Template template = freemarkerConfig.getTemplate("hello.java.ftl");
 
-        // 数据
         Map<String, Object> data = new HashMap<>();
         data.put("className", "Hello");
 
-        // 渲染
         template.process(data, new FileWriter(new File("t.java")));
     }
 }
