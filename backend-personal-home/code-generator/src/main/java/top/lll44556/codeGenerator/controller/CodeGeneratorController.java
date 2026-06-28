@@ -19,7 +19,7 @@ public class CodeGeneratorController {
 
     @PostMapping("/generate")
     public R<GenerateResVo> generate(@RequestBody GenerateReqVo request) {
-        String outputContent = codeGeneratorService.generate(request);
+        String outputContent = codeGeneratorService.generate(request);  
         return R.ok(new GenerateResVo(outputContent));
     }
 }
