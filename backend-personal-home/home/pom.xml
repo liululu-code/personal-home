@@ -6,7 +6,7 @@
         <groupId>top.lll44556</groupId>
         <artifactId>backend-personal-home</artifactId>
         <version>0.0.1-SNAPSHOT</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>home</artifactId>
@@ -27,6 +27,12 @@
         <dependency>
             <groupId>top.lll44556</groupId>
             <artifactId>auth</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>top.lll44556</groupId>
+            <artifactId>code-generator</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
     </dependencies>

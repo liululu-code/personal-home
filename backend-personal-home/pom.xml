@@ -22,7 +22,7 @@
         <module>home</module>
         <module>auth</module>
         <module>comic-read</module>
-        <module>code-template</module>
+        <module>code-generator</module>
     </modules>
 
 
