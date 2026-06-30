@@ -20,13 +20,14 @@
 # 常见错误避免
 
 1. 在 Windows PowerShell 中编写命令时，禁止自定义变量名使用 `$PID`、`$PSVersionTable` 等内置只读或自动变量；涉及进程 ID 等场景时，统一使用 `$targetPid`、`$processId` 等非保留名称，避免出现变量不可写错误。
+2. 使用 Windows PowerShell 中读取包含中文的仓库文件时，必须显式指定 UTF-8 编码，例如使用 `Get-Content -Encoding UTF8 -Path <文件路径>`；禁止直接使用未指定编码的 `Get-Content` 判断文件内容，避免将 UTF-8 无 BOM 文件误读为 GBK/ANSI 导致中文乱码。
 
 
 
 # 开发原则
 
 1. 未明确要求时，不要重复造轮子，优先复用成熟库、官方组件、Spring / Vue 生态已有方案。
-2. 所有代码和注释统一按 UTF-8 读取与编写，避免中文乱码。
+2. 所有代码和注释统一按 UTF-8 读取与编写，避免中文乱码；在 Windows PowerShell 环境下读取文件时应显式指定 `-Encoding UTF8`。
 3. 重要变量、核心函数、复杂逻辑必须添加中文注释，注释应解释“为什么这样做”以及关键约束。
 4. 前端代码必须符合 TypeScript 编码规范，优先保证类型完整，避免滥用 `any`。
 5. 后端数据库访问使用 Spring Data 技术栈实现。

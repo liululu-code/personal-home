@@ -19,4 +19,5 @@ public class GenerateReqVo {
     private OutputType outputType;
 
     private String inputContent;
+
 }

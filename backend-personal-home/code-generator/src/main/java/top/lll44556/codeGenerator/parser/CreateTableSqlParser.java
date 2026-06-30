@@ -1,5 +1,6 @@
 package top.lll44556.codeGenerator.parser;
 
+import lombok.AllArgsConstructor;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
@@ -9,6 +10,7 @@ import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.table.Index;
 import net.sf.jsqlparser.schema.Table;
 import org.springframework.stereotype.Component;
+import top.lll44556.codeGenerator.enums.SqlTypeCategory;
 import top.lll44556.codeGenerator.model.ColumnMeta;
 import top.lll44556.codeGenerator.model.TableMeta;
 
@@ -19,7 +21,10 @@ import java.util.Locale;
 import java.util.Set;
 
 @Component
+@AllArgsConstructor
 public class CreateTableSqlParser {
+
+    private final PostgresqlTypeClassifier postgresqlTypeClassifier;
 
     /**
      * 解析入口：只接受单条 CREATE TABLE SQL，避免把非建表语句误传给后续代码生成模板。
@@ -219,15 +224,15 @@ public class CreateTableSqlParser {
     /**
      * 假数据表达式生成：根据字段类型、默认值和字段命名约定生成 PostgreSQL SELECT 表达式。
      */
-    private String   buildInsertValueExpression(ColumnMeta columnMeta) {
+    private String buildInsertValueExpression(ColumnMeta columnMeta) {
         // 如果建表 SQL 已声明默认值，优先沿用默认值，保持生成数据与表设计意图一致。
         if (columnMeta.getDefaultValue() != null && !columnMeta.getDefaultValue().isBlank()) {
             return columnMeta.getDefaultValue();
         }
 
-        // 字段名与类型名统一小写后再判断，避免 SQL 中大小写写法影响生成策略。
+        // 字段命名规则和数据库类型规则分别处理：命名用于识别时间戳语义，类型分类用于选择假数据表达式。
         String columnName = columnMeta.getColumnName().toLowerCase(Locale.ROOT);
-        String dataType = columnMeta.getDataType();
+        SqlTypeCategory typeCategory = postgresqlTypeClassifier.classify(columnMeta.getDataType());
 
         // 项目中 int8 时间字段常用毫秒时间戳存储，按命名约定生成当前时间附近的 bigint 值。
         if (isTimestampLikeColumn(columnName)) {
@@ -235,22 +240,22 @@ public class CreateTableSqlParser {
         }
 
         // 文本主键需要稳定且不重复，md5(gs::text) 简单满足 varchar(32) 主键场景。
-        if (columnMeta.isPrimaryKey() && isTextType(dataType)) {
+        if (columnMeta.isPrimaryKey() && typeCategory == SqlTypeCategory.TEXT) {
             return "md5(gs::text)";
         }
 
         // 普通文本字段拼接字段名和序号，生成结果更容易人工识别来自哪个字段。
-        if (isTextType(dataType)) {
+        if (typeCategory == SqlTypeCategory.TEXT) {
             return "'" + columnMeta.getColumnName() + "_' || gs::text";
         }
 
         // 整数字段直接使用 generate_series 的序号，保证每行数据不同且表达式简单。
-        if (isIntegerType(dataType)) {
+        if (typeCategory == SqlTypeCategory.INTEGER) {
             return "gs";
         }
 
         // 布尔字段暂用固定 true，后续如需要可改为按 gs 奇偶生成 true/false。
-        if (isBooleanType(dataType)) {
+        if (typeCategory == SqlTypeCategory.BOOLEAN) {
             return "true";
         }
 
@@ -264,36 +269,6 @@ public class CreateTableSqlParser {
     private boolean isTimestampLikeColumn(String columnName) {
         // 当前没有完整业务字段字典，因此先通过常见命名后缀识别时间类字段。
         return columnName.endsWith("_time") || columnName.endsWith("_date") || columnName.contains("timestamp");
-    }
-
-    /**
-     * 文本类型识别：用于生成可读字符串假数据，并对 varchar 主键生成 md5 值。
-     */
-    private boolean isTextType(String dataType) {
-        // PostgreSQL 的 varchar/char/text 都按字符串表达式生成。
-        return dataType.contains("char") || "text".equalsIgnoreCase(dataType);
-    }
-
-    /**
-     * 整数类型识别：兼容 PostgreSQL 常见 int2、int4、int8 以及标准 SQL 类型名。
-     */
-    private boolean isIntegerType(String dataType) {
-        // 兼容 PostgreSQL 简写类型和标准类型名，避免 int8/bigint 这类别名漏判。
-        return "int".equals(dataType)
-                || "int2".equals(dataType)
-                || "int4".equals(dataType)
-                || "int8".equals(dataType)
-                || "integer".equals(dataType)
-                || "bigint".equals(dataType)
-                || "smallint".equals(dataType);
-    }
-
-    /**
-     * 布尔类型识别：为 boolean/bool 字段提供基础假数据表达式。
-     */
-    private boolean isBooleanType(String dataType) {
-        // PostgreSQL 同时支持 bool 和 boolean，两者生成策略一致。
-        return "bool".equals(dataType) || "boolean".equals(dataType);
     }
 
     /**
