@@ -32,6 +32,7 @@ public class CodeGeneratorServiceImpl implements CodeGeneratorService {
             throw new IllegalArgumentException("当前仅实现数据库假数据生成 SQL");
         }
 
+        // 解析输入
         TableMeta tableMeta = createTableSqlParser.parse(request.getInputContent());
 
         Map<String, Object> dataModel = new HashMap<>();

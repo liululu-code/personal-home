@@ -15,14 +15,24 @@ import top.lll44556.codeGenerator.model.ColumnMeta;
 import top.lll44556.codeGenerator.model.TableMeta;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Component
 @AllArgsConstructor
 public class CreateTableSqlParser {
+
+    private static final String DEFAULT_COLUMN_COMMENT = "默认注释";
+
+    private static final Pattern COMMENT_ON_COLUMN_PATTERN = Pattern.compile(
+            "(?is)comment\\s+on\\s+column\\s+([\\w\".]+)\\s+is\\s+'((?:''|[^'])*)'"
+    );
 
     private final PostgresqlTypeClassifier postgresqlTypeClassifier;
 
@@ -32,7 +42,7 @@ public class CreateTableSqlParser {
     public TableMeta parse(String sql) {
         try {
             // 先交给 JSQLParser 做语法解析，避免后续代码直接依赖字符串切割判断 SQL 类型。
-            Statement statement = CCJSqlParserUtil.parse(sql);
+            Statement statement = CCJSqlParserUtil.parse(extractCreateTableStatement(sql));
 
             // 当前生成器只围绕建表 SQL 产出代码，非 CREATE TABLE 语句没有足够元数据可生成。
             if (!(statement instanceof CreateTable createTable)) {
@@ -40,7 +50,7 @@ public class CreateTableSqlParser {
             }
 
             // 将第三方 AST 转为内部模型，保证模板和生成策略不被 JSQLParser API 绑定。
-            return toTableMeta(createTable);
+            return toTableMeta(createTable, sql);
         } catch (JSQLParserException e) {
             throw new IllegalArgumentException("建表 SQL 解析失败", e);
         }
@@ -49,7 +59,7 @@ public class CreateTableSqlParser {
     /**
      * 表级元数据组装：把 JSQLParser 的 AST 转成项目内部稳定模型，后续模板不直接依赖第三方 AST。
      */
-    private TableMeta toTableMeta(CreateTable createTable) {
+    private TableMeta toTableMeta(CreateTable createTable, String sql) {
         // 表名先做归一化，内部模型使用无引号名称进行比较和后续命名转换。
         Table table = createTable.getTable();
         String schemaName = normalizeIdentifier(table.getSchemaName());
@@ -64,11 +74,13 @@ public class CreateTableSqlParser {
         // 表级主键约束会影响字段假数据策略，所以需要在解析字段前先提取。
         Set<String> primaryKeyNames = parsePrimaryKeyNames(createTable);
         tableMeta.setPrimaryKeyNames(new ArrayList<>(primaryKeyNames));
+        Map<String, String> commentOnColumnMap = parseCommentOnColumnMap(sql);
 
         // 字段顺序沿用原始建表 SQL，确保生成的 INSERT 字段列表和 SELECT 表达式一一对应。
         List<ColumnMeta> columns = new ArrayList<>();
         for (ColumnDefinition columnDefinition : createTable.getColumnDefinitions()) {
             ColumnMeta columnMeta = toColumnMeta(columnDefinition, primaryKeyNames);
+            columnMeta.setComment(resolveColumnComment(columnDefinition, columnMeta, commentOnColumnMap));
             columns.add(columnMeta);
         }
         tableMeta.setColumns(columns);
@@ -105,6 +117,84 @@ public class CreateTableSqlParser {
         // 生成表达式在解析阶段预计算，模板只负责按字段顺序输出 SQL。
         columnMeta.setInsertValueExpression(buildInsertValueExpression(columnMeta));
         return columnMeta;
+    }
+
+    private String extractCreateTableStatement(String sql) {
+        if (sql == null) {
+            return null;
+        }
+
+        int statementEndIndex = sql.indexOf(';');
+        if (statementEndIndex < 0) {
+            return sql;
+        }
+
+        // PostgreSQL 字段注释通常通过 COMMENT ON COLUMN 附加在建表语句后，JSQLParser 仍只解析 CREATE TABLE 主体。
+        return sql.substring(0, statementEndIndex);
+    }
+
+    /**
+     * 字段注释解析：优先支持 PostgreSQL 的 COMMENT ON COLUMN 语句，兼容部分建表 SQL 中的 COMMENT 'xxx' 写法。
+     */
+    private String resolveColumnComment(ColumnDefinition columnDefinition,
+                                        ColumnMeta columnMeta,
+                                        Map<String, String> commentOnColumnMap) {
+        String commentOnColumn = commentOnColumnMap.get(columnMeta.getColumnName());
+        if (commentOnColumn != null && !commentOnColumn.isBlank()) {
+            return commentOnColumn;
+        }
+
+        String inlineComment = parseInlineColumnComment(columnDefinition.getColumnSpecs());
+        if (inlineComment != null && !inlineComment.isBlank()) {
+            return inlineComment;
+        }
+
+        // 没有数据库字段注释时统一写入默认注释，保证模板生成的字段注释稳定存在。
+        return DEFAULT_COLUMN_COMMENT;
+    }
+
+    /**
+     * COMMENT ON COLUMN 可能作为建表脚本附加语句出现，解析时只按字段名归档，后续再和字段定义匹配。
+     */
+    private Map<String, String> parseCommentOnColumnMap(String sql) {
+        Map<String, String> columnComments = new HashMap<>();
+        if (sql == null || sql.isBlank()) {
+            return columnComments;
+        }
+
+        Matcher matcher = COMMENT_ON_COLUMN_PATTERN.matcher(sql);
+        while (matcher.find()) {
+            String fullColumnName = matcher.group(1);
+            String columnName = normalizeIdentifier(fullColumnName.substring(fullColumnName.lastIndexOf('.') + 1));
+            columnComments.put(columnName, matcher.group(2).replace("''", "'"));
+        }
+        return columnComments;
+    }
+
+    private String parseInlineColumnComment(List<String> specs) {
+        if (specs == null || specs.isEmpty()) {
+            return null;
+        }
+
+        for (int i = 0; i < specs.size() - 1; i++) {
+            if (!"COMMENT".equalsIgnoreCase(specs.get(i))) {
+                continue;
+            }
+            return trimSqlStringLiteral(specs.get(i + 1));
+        }
+        return null;
+    }
+
+    private String trimSqlStringLiteral(String value) {
+        if (value == null) {
+            return null;
+        }
+
+        String trimmedValue = value.trim();
+        if (trimmedValue.length() >= 2 && trimmedValue.startsWith("'") && trimmedValue.endsWith("'")) {
+            return trimmedValue.substring(1, trimmedValue.length() - 1).replace("''", "'");
+        }
+        return trimmedValue;
     }
 
     /**

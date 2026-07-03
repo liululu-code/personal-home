@@ -27,7 +27,7 @@ const router = createRouter({
         {
           path: 'code-generator',
           name: 'code-generator',
-          component: () => import('../views/code-generate/CodeGeneratorView.vue'),
+          component: () => import('../views/code-generator/CodeGeneratorView.vue'),
         },
         {
           path: 'website-guide',

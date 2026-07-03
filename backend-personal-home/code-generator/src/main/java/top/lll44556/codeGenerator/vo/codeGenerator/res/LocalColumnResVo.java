@@ -1,4 +1,4 @@
-package top.lll44556.codeGenerator.model;
+package top.lll44556.codeGenerator.vo.codeGenerator.res;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ColumnMeta {
+public class LocalColumnResVo {
 
     private String columnName;
 
@@ -25,5 +25,7 @@ public class ColumnMeta {
 
     private String comment;
 
-    private String insertValueExpression;
+    private String entityType;
+
+    private String entityName;
 }
