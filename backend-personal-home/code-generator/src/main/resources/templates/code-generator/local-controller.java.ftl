@@ -1,6 +1,6 @@
 package ${controllerPackageName};
 
-import common.lll44556.top.util.R;
+import ${responseClassPackageName}.${responseClassName};
 import ${reqVoPackageName}.${reqVoClassName};
 import ${resVoPackageName}.${resVoClassName};
 import ${servicePackageName}.${serviceClassName};
@@ -27,22 +27,22 @@ public class ${controllerClassName} {
     private final ${serviceClassName} ${serviceFieldName};
 
     @PostMapping("/save")
-    public R<${resVoClassName}> save(@RequestBody ${reqVoClassName} request) {
-        return R.ok(${serviceFieldName}.save(request));
+    public ${responseClassName}<${resVoClassName}> save(@RequestBody ${reqVoClassName} request) {
+        return ${responseClassName}.${responseSuccessMethodName}(${serviceFieldName}.save(request));
     }
 
     @GetMapping("/list")
-    public R<List<${resVoClassName}>> list() {
-        return R.ok(${serviceFieldName}.list());
+    public ${responseClassName}<List<${resVoClassName}>> list() {
+        return ${responseClassName}.${responseSuccessMethodName}(${serviceFieldName}.list());
     }
 
     @GetMapping("/detail")
-    public R<${resVoClassName}> detail(@RequestParam("id") String id) {
-        return R.ok(${serviceFieldName}.detail(id));
+    public ${responseClassName}<${resVoClassName}> detail(@RequestParam("id") String id) {
+        return ${responseClassName}.${responseSuccessMethodName}(${serviceFieldName}.detail(id));
     }
 
     @PostMapping("/delete")
-    public R<Boolean> delete(@RequestBody List<String> ids) {
-        return R.ok(${serviceFieldName}.delete(ids));
+    public ${responseClassName}<Boolean> delete(@RequestBody List<String> ids) {
+        return ${responseClassName}.${responseSuccessMethodName}(${serviceFieldName}.delete(ids));
     }
 }

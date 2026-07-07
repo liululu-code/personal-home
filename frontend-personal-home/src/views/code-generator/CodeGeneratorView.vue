@@ -83,6 +83,24 @@
               placeholder="请输入类名，例如 UserEntity"
             />
           </el-form-item>
+          <el-form-item label="响应类包名">
+            <el-input
+              v-model="localForm.responseClassPackageName"
+              placeholder="请输入响应类包名，例如 top.lll44556.common.util"
+            />
+          </el-form-item>
+          <el-form-item label="响应类名称">
+            <el-input
+              v-model="localForm.responseClassName"
+              placeholder="请输入响应类名称，例如 Result"
+            />
+          </el-form-item>
+          <el-form-item label="成功响应函数">
+            <el-input
+              v-model="localForm.responseSuccessMethodName"
+              placeholder="请输入成功响应函数名，例如 success"
+            />
+          </el-form-item>
         </div>
 
         <el-form-item label="建表语句">
@@ -225,9 +243,12 @@ const localContentTypeOptions: LocalContentTypeOption[] = [
   { label: 'Entity', value: 'ENTITY' },
   { label: 'Bean', value: 'BEAN' },
   { label: 'Repository', value: 'REPOSITORY' },
+  { label: 'NativeQuery', value: 'NATIVE_QUERY' },
+  { label: 'NativeQueryPostgreSQL', value: 'NATIVE_QUERY_POSTGRESQL' },
   { label: 'Service', value: 'SERVICE' },
   { label: 'ServiceImpl', value: 'SERVICE_IMPL' },
   { label: 'Controller', value: 'CONTROLLER' },
+  { label: 'Convert', value: 'CONVERT' },
   { label: 'ReqVO', value: 'REQ_VO' },
   { label: 'ResVO', value: 'RES_VO' },
 ]
@@ -254,11 +275,14 @@ const form = reactive<CodeGenerateRequest>({
 const localForm = reactive<LocalGenerateRequest>({
   databaseType: 'POSTGRESQL',
   createTableSql: '',
-  packageName: '',
+  packageName: 'top.lll44556',
   entityClassName: '',
   contentTypes: ['ENTITY', 'REPOSITORY', 'SERVICE', 'SERVICE_IMPL', 'CONTROLLER'],
   entityFields: [],
-  outputDirectory: '',
+  outputDirectory: 'D:\\codeGenerator',
+  responseClassPackageName: 'top.lll44556.common.util',
+  responseClassName: 'Result',
+  responseSuccessMethodName: 'success',
 })
 
 const generating = ref(false)

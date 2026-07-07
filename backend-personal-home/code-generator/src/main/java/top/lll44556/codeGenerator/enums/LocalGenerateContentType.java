@@ -4,9 +4,12 @@ public enum LocalGenerateContentType {
     ENTITY,
     BEAN,
     REPOSITORY,
+    NATIVE_QUERY,
+    NATIVE_QUERY_POSTGRESQL,
     SERVICE,
     SERVICE_IMPL,
     CONTROLLER,
+    CONVERT,
     REQ_VO,
     RES_VO
 }

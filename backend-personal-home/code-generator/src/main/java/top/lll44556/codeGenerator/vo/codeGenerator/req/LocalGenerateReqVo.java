@@ -36,4 +36,13 @@ public class LocalGenerateReqVo {
 
     @Schema(title = "本地生成文件夹")
     private String outputDirectory;
+
+    @Schema(title = "响应类包名")
+    private String responseClassPackageName;
+
+    @Schema(title = "响应类名称")
+    private String responseClassName;
+
+    @Schema(title = "成功响应函数名")
+    private String responseSuccessMethodName;
 }

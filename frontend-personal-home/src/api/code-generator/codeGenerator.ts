@@ -12,9 +12,12 @@ export type LocalGenerateContentType =
   | 'ENTITY'
   | 'BEAN'
   | 'REPOSITORY'
+  | 'NATIVE_QUERY'
+  | 'NATIVE_QUERY_POSTGRESQL'
   | 'SERVICE'
   | 'SERVICE_IMPL'
   | 'CONTROLLER'
+  | 'CONVERT'
   | 'REQ_VO'
   | 'RES_VO'
 
@@ -62,6 +65,9 @@ export interface LocalGenerateRequest {
   contentTypes: LocalGenerateContentType[]
   entityFields: LocalEntityField[]
   outputDirectory: string
+  responseClassPackageName: string
+  responseClassName: string
+  responseSuccessMethodName: string
 }
 
 export interface LocalEntityField {

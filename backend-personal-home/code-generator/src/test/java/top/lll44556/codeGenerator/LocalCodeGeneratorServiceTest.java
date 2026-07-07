@@ -53,7 +53,12 @@ class LocalCodeGeneratorServiceTest {
                         LocalGenerateContentType.ENTITY,
                         LocalGenerateContentType.REQ_VO,
                         LocalGenerateContentType.RES_VO,
-                        LocalGenerateContentType.BEAN
+                        LocalGenerateContentType.BEAN,
+                        LocalGenerateContentType.CONTROLLER,
+                        LocalGenerateContentType.CONVERT,
+                        LocalGenerateContentType.REPOSITORY,
+                        LocalGenerateContentType.NATIVE_QUERY,
+                        LocalGenerateContentType.NATIVE_QUERY_POSTGRESQL
                 ),
                 List.of(
                         new LocalEntityFieldReqVo("id", "String", "id", ""),
@@ -64,15 +69,24 @@ class LocalCodeGeneratorServiceTest {
                         new LocalEntityFieldReqVo("c_nickname", "String", "nickname", "用户昵称"),
                         new LocalEntityFieldReqVo("c_avatar_url", "String", "avatarUrl", "  用户头像  ")
                 ),
-                tempDir.toString()
+                tempDir.toString(),
+                "",
+                "",
+                ""
         );
 
         localCodeGeneratorService.generate(request);
 
         String entityContent = readGeneratedJava("top.lll44556.demo.entity", "UserEntity");
-        String reqVoContent = readGeneratedJava("top.lll44556.demo.vo.req", "UserReqVO");
+        String reqVoContent = readGeneratedJava("top.lll44556.demo.vo.req", "UserSaveReqVO");
         String resVoContent = readGeneratedJava("top.lll44556.demo.vo.res", "UserResVO");
         String beanContent = readGeneratedJava("top.lll44556.demo.service.bean", "UserBean");
+        String controllerContent = readGeneratedJava("top.lll44556.demo.controller", "UserController");
+        String convertContent = readGeneratedJava("top.lll44556.demo.convert", "UserConvert");
+        String repositoryContent = readGeneratedJava("top.lll44556.demo.repository", "UserRepository");
+        String nativeQueryContent = readGeneratedJava("top.lll44556.demo.service.nativequery", "UserNativeQuery");
+        String nativeQueryPostgreSQLContent = readGeneratedJava(
+                "top.lll44556.demo.service.nativequery", "UserNativeQueryPostgreSQL");
         String today = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
 
         // Entity 和 Bean 通过基类承载公共字段，生成模板不能重复声明这些通用成员。
@@ -92,13 +106,21 @@ class LocalCodeGeneratorServiceTest {
         assertGeneratedClassHeader(beanContent, "User", today);
         assertGeneratedClassHeader(reqVoContent, "User", today);
         assertGeneratedClassHeader(resVoContent, "User", today);
+        assertGeneratedClassHeader(controllerContent, "User 控制器", today);
+
+        // Controller 响应包装配置为空时必须使用后端默认值，避免模板绑定到固定 R.ok。
+        assertTrue(controllerContent.contains("import top.lll44556.common.util.Result;"));
+        assertTrue(controllerContent.contains("public Result<UserResVO> save"));
+        assertTrue(controllerContent.contains("return Result.success(userService.save(request));"));
 
         // Entity 不参与 OpenAPI 入出参描述，因此不能生成任何 Schema 注解。
         assertTrue(!entityContent.contains("io.swagger.v3.oas.annotations.media.Schema"));
         assertTrue(!entityContent.contains("@Schema"));
 
         // ReqVO、ResVO、Bean 需要类级 Schema，便于接口文档展示对象标题。
-        assertTrue(reqVoContent.contains("@Schema(title = \"UserReqVO\")"));
+        assertTrue(reqVoContent.contains("public class UserSaveReqVO"));
+        assertTrue(reqVoContent.contains("@Schema(title = \"UserSaveReqVO\")"));
+        assertTrue(!reqVoContent.contains("UserReqVO"));
         assertTrue(resVoContent.contains("@Schema(title = \"UserResVO\")"));
         assertTrue(beanContent.contains("@Schema(title = \"UserBean\")"));
 
@@ -114,6 +136,34 @@ class LocalCodeGeneratorServiceTest {
         // 注释会在后端 trim 后再进入模板，避免生成带首尾空白的 Schema 标题。
         assertGeneratedFieldComment(beanContent, "用户头像");
         assertTrue(!beanContent.contains("@Schema(title = \"  用户头像  \")"));
+
+        // Convert 使用本地生成的 SaveReqVO 命名，并要求列表转换方法统一以 List 作为后缀。
+        assertGeneratedClassHeader(convertContent, "User 转换器", today);
+        assertTrue(convertContent.contains("@Mapper(componentModel = \"spring\")"));
+        assertTrue(convertContent.contains("UserConvert INSTANCE = Mappers.getMapper(UserConvert.class);"));
+        assertTrue(convertContent.contains("import top.lll44556.demo.vo.req.UserSaveReqVO;"));
+        assertTrue(convertContent.contains("UserBean convertSaveReqVOToBean(UserSaveReqVO vo);"));
+        assertTrue(convertContent.contains("List<UserBean> convertSaveReqVOToBeanList(List<UserSaveReqVO> voList);"));
+        assertTrue(convertContent.contains("List<UserEntity> convertBeanToEntityList(List<UserBean> beanList);"));
+        assertTrue(convertContent.contains("List<UserBean> convertEntityToBeanList(List<UserEntity> entityList);"));
+        assertTrue(convertContent.contains("List<UserResVO> convertBeanToResVOList(List<UserBean> beanList);"));
+        assertTrue(!convertContent.contains("convertListBeanToResVO"));
+        assertTrue(!convertContent.contains("UserReqVO"));
+
+        // PostgreSQL 特性的 nativeQuery SQL 统一放在 Repository，适配器只负责委托调用。
+        assertTrue(repositoryContent.contains("@Query(value = \"select * from sys_user where yxx = 1\", nativeQuery = true)"));
+        assertTrue(repositoryContent.contains("List<UserEntity> findUserConditionByNativeQuery();"));
+        assertTrue(repositoryContent.contains("@Query(value = \"select count(1) from sys_user where yxx = 1\", nativeQuery = true)"));
+        assertTrue(repositoryContent.contains("Integer countUserConditionByNativeQuery();"));
+        assertTrue(nativeQueryContent.contains("public interface UserNativeQuery"));
+        assertTrue(nativeQueryContent.contains("List<UserEntity> findUserCondition();"));
+        assertTrue(nativeQueryContent.contains("Integer findUserTotal();"));
+        assertTrue(nativeQueryPostgreSQLContent.contains("public class UserNativeQueryPostgreSQL implements UserNativeQuery"));
+        assertTrue(nativeQueryPostgreSQLContent.contains("private final UserRepository userRepository;"));
+        assertTrue(nativeQueryPostgreSQLContent.contains("return userRepository.findUserConditionByNativeQuery();"));
+        assertTrue(nativeQueryPostgreSQLContent.contains("return userRepository.countUserConditionByNativeQuery();"));
+        assertTrue(!nativeQueryPostgreSQLContent.contains("EntityManager"));
+        assertTrue(!nativeQueryPostgreSQLContent.contains("createQuery"));
     }
 
     private String readGeneratedJava(String packageName, String className) throws Exception {

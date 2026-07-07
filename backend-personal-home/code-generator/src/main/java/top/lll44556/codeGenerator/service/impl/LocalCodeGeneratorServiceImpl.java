@@ -42,17 +42,29 @@ public class LocalCodeGeneratorServiceImpl implements LocalCodeGeneratorService 
 
     private static final String LOCAL_REPOSITORY_TEMPLATE = "code-generator/local-repository.java.ftl";
 
+    private static final String LOCAL_NATIVE_QUERY_TEMPLATE = "code-generator/local-native-query.java.ftl";
+
+    private static final String LOCAL_NATIVE_QUERY_POSTGRESQL_TEMPLATE = "code-generator/local-native-query-postgresql.java.ftl";
+
     private static final String LOCAL_SERVICE_TEMPLATE = "code-generator/local-service.java.ftl";
 
     private static final String LOCAL_SERVICE_IMPL_TEMPLATE = "code-generator/local-service-impl.java.ftl";
 
     private static final String LOCAL_CONTROLLER_TEMPLATE = "code-generator/local-controller.java.ftl";
 
+    private static final String LOCAL_CONVERT_TEMPLATE = "code-generator/local-convert.java.ftl";
+
     private static final String LOCAL_REQ_VO_TEMPLATE = "code-generator/local-req-vo.java.ftl";
 
     private static final String LOCAL_RES_VO_TEMPLATE = "code-generator/local-res-vo.java.ftl";
 
     private static final String DEFAULT_ENTITY_FIELD_COMMENT = "默认注释";
+
+    private static final String DEFAULT_RESPONSE_CLASS_PACKAGE_NAME = "top.lll44556.common.util";
+
+    private static final String DEFAULT_RESPONSE_CLASS_NAME = "Result";
+
+    private static final String DEFAULT_RESPONSE_SUCCESS_METHOD_NAME = "success";
 
     private static final Set<String> COMMON_FIELD_COLUMN_NAMES = Set.of("id", "cjsj", "gxsj", "czz", "yxx");
 
@@ -202,6 +214,9 @@ public class LocalCodeGeneratorServiceImpl implements LocalCodeGeneratorService 
         dataModel.put("repositoryPackageName", basePackageName + ".repository");
         dataModel.put("repositoryClassName", baseClassName + "Repository");
         dataModel.put("repositoryFieldName", lowerBaseClassName + "Repository");
+        dataModel.put("nativeQueryPackageName", basePackageName + ".service.nativequery");
+        dataModel.put("nativeQueryClassName", baseClassName + "NativeQuery");
+        dataModel.put("nativeQueryPostgreSQLClassName", baseClassName + "NativeQueryPostgreSQL");
 
         dataModel.put("beanPackageName", basePackageName + ".service.bean");
         dataModel.put("beanClassName", baseClassName + "Bean");
@@ -214,9 +229,17 @@ public class LocalCodeGeneratorServiceImpl implements LocalCodeGeneratorService 
 
         dataModel.put("controllerPackageName", basePackageName + ".controller");
         dataModel.put("controllerClassName", baseClassName + "Controller");
+        dataModel.put("responseClassPackageName", resolveTemplateValue(
+                request.getResponseClassPackageName(), DEFAULT_RESPONSE_CLASS_PACKAGE_NAME));
+        dataModel.put("responseClassName", resolveTemplateValue(
+                request.getResponseClassName(), DEFAULT_RESPONSE_CLASS_NAME));
+        dataModel.put("responseSuccessMethodName", resolveTemplateValue(
+                request.getResponseSuccessMethodName(), DEFAULT_RESPONSE_SUCCESS_METHOD_NAME));
+        dataModel.put("convertPackageName", basePackageName + ".convert");
+        dataModel.put("convertClassName", baseClassName + "Convert");
 
         dataModel.put("reqVoPackageName", basePackageName + ".vo.req");
-        dataModel.put("reqVoClassName", baseClassName + "ReqVO");
+        dataModel.put("reqVoClassName", baseClassName + "SaveReqVO");
 
         dataModel.put("resVoPackageName", basePackageName + ".vo.res");
         dataModel.put("resVoClassName", baseClassName + "ResVO");
@@ -273,14 +296,23 @@ public class LocalCodeGeneratorServiceImpl implements LocalCodeGeneratorService 
         return name.trim().replace("_", "").toLowerCase(Locale.ROOT);
     }
 
+    private String resolveTemplateValue(String value, String defaultValue) {
+        if (value == null || value.isBlank()) {
+            return defaultValue;
+        }
+        return value.trim();
+    }
+
     private String resolveTargetPackageName(LocalGenerateContentType contentType, Map<String, Object> dataModel) {
         return switch (contentType) {
             case ENTITY -> dataModel.get("entityPackageName").toString();
             case BEAN -> dataModel.get("beanPackageName").toString();
             case REPOSITORY -> dataModel.get("repositoryPackageName").toString();
+            case NATIVE_QUERY, NATIVE_QUERY_POSTGRESQL -> dataModel.get("nativeQueryPackageName").toString();
             case SERVICE -> dataModel.get("servicePackageName").toString();
             case SERVICE_IMPL -> dataModel.get("serviceImplPackageName").toString();
             case CONTROLLER -> dataModel.get("controllerPackageName").toString();
+            case CONVERT -> dataModel.get("convertPackageName").toString();
             case REQ_VO -> dataModel.get("reqVoPackageName").toString();
             case RES_VO -> dataModel.get("resVoPackageName").toString();
         };
@@ -291,9 +323,12 @@ public class LocalCodeGeneratorServiceImpl implements LocalCodeGeneratorService 
             case ENTITY -> dataModel.get("entityClassName").toString();
             case BEAN -> dataModel.get("beanClassName").toString();
             case REPOSITORY -> dataModel.get("repositoryClassName").toString();
+            case NATIVE_QUERY -> dataModel.get("nativeQueryClassName").toString();
+            case NATIVE_QUERY_POSTGRESQL -> dataModel.get("nativeQueryPostgreSQLClassName").toString();
             case SERVICE -> dataModel.get("serviceClassName").toString();
             case SERVICE_IMPL -> dataModel.get("serviceImplClassName").toString();
             case CONTROLLER -> dataModel.get("controllerClassName").toString();
+            case CONVERT -> dataModel.get("convertClassName").toString();
             case REQ_VO -> dataModel.get("reqVoClassName").toString();
             case RES_VO -> dataModel.get("resVoClassName").toString();
         };
@@ -304,9 +339,12 @@ public class LocalCodeGeneratorServiceImpl implements LocalCodeGeneratorService 
             case ENTITY -> LOCAL_ENTITY_TEMPLATE;
             case BEAN -> LOCAL_BEAN_TEMPLATE;
             case REPOSITORY -> LOCAL_REPOSITORY_TEMPLATE;
+            case NATIVE_QUERY -> LOCAL_NATIVE_QUERY_TEMPLATE;
+            case NATIVE_QUERY_POSTGRESQL -> LOCAL_NATIVE_QUERY_POSTGRESQL_TEMPLATE;
             case SERVICE -> LOCAL_SERVICE_TEMPLATE;
             case SERVICE_IMPL -> LOCAL_SERVICE_IMPL_TEMPLATE;
             case CONTROLLER -> LOCAL_CONTROLLER_TEMPLATE;
+            case CONVERT -> LOCAL_CONVERT_TEMPLATE;
             case REQ_VO -> LOCAL_REQ_VO_TEMPLATE;
             case RES_VO -> LOCAL_RES_VO_TEMPLATE;
         };
