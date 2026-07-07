@@ -10,6 +10,7 @@ export type OutputType =
   | 'REQ_VO'
 export type LocalGenerateContentType =
   | 'ENTITY'
+  | 'BEAN'
   | 'REPOSITORY'
   | 'SERVICE'
   | 'SERVICE_IMPL'

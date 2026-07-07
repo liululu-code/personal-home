@@ -21,6 +21,9 @@
 
 1. 在 Windows PowerShell 中编写命令时，禁止自定义变量名使用 `$PID`、`$PSVersionTable` 等内置只读或自动变量；涉及进程 ID 等场景时，统一使用 `$targetPid`、`$processId` 等非保留名称，避免出现变量不可写错误。
 2. 使用 Windows PowerShell 中读取包含中文的仓库文件时，必须显式指定 UTF-8 编码，例如使用 `Get-Content -Encoding UTF8 -Path <文件路径>`；禁止直接使用未指定编码的 `Get-Content` 判断文件内容，避免将 UTF-8 无 BOM 文件误读为 GBK/ANSI 导致中文乱码。
+3. 后端测试优先使用本机 Maven 执行；如果 `./mvnw` 因下载 Maven Wrapper 组件出现 `401 Unauthorized` 或 `Cannot start maven from wrapper`，不要反复重试 Wrapper，改用 `mvn` 命令。
+4. 在后端多模块项目中单独测试 `code-generator` 等依赖其他模块的子模块时，必须带上 `-am`，例如 `mvn -pl code-generator -am test`，避免出现 `Could not find artifact top.lll44556:common:jar` 这类 reactor 依赖未构建问题。
+5. 在非交互终端执行前端 `pnpm` 命令时，如果可能触发安装或重建 `node_modules`，应先设置 `$env:CI='true'`，例如 `$env:CI='true'; pnpm install --frozen-lockfile`，避免 `ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY`。
 
 
 
@@ -68,6 +71,13 @@ pnpm test:unit
 pnpm test:e2e
 ```
 
+在 Windows PowerShell 的非交互环境中安装或检查前端依赖时，建议执行：
+
+```powershell
+$env:CI='true'; pnpm install --frozen-lockfile
+$env:CI='true'; pnpm type-check
+```
+
 ## 后端
 
 在 `backend-personal-home` 目录执行：
@@ -76,6 +86,12 @@ pnpm test:e2e
 ./mvnw spring-boot:run
 ./mvnw test
 ./mvnw clean package
+```
+
+如果 Maven Wrapper 下载失败，或需要测试依赖其他模块的子模块，使用本机 Maven：
+
+```powershell
+mvn -pl code-generator -am test
 ```
 
 

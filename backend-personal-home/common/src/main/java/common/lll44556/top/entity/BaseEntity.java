@@ -19,16 +19,16 @@ public class BaseEntity implements Serializable {
     @Column(name = "id", length = 32, nullable = false)
     private String id;
 
-    @Column(name = "created_time", nullable = false)
+    @Column(name = "cjsj", nullable = false)
     private Long createdTime;
 
-    @Column(name = "updated_time")
+    @Column(name = "gxsj")
     private Long updatedTime;
 
-    @Column(name = "operator")
+    @Column(name = "czz")
     private String operator;
 
-    @Column(name = "valid", nullable = false)
+    @Column(name = "yxx", nullable = false)
     private Integer valid;
 
     @PrePersist

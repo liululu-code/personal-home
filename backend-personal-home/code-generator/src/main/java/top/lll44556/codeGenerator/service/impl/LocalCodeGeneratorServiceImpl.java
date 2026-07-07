@@ -36,6 +36,8 @@ public class LocalCodeGeneratorServiceImpl implements LocalCodeGeneratorService 
 
     private static final String LOCAL_ENTITY_TEMPLATE = "code-generator/local-entity.java.ftl";
 
+    private static final String LOCAL_BEAN_TEMPLATE = "code-generator/local-bean.java.ftl";
+
     private static final String LOCAL_REPOSITORY_TEMPLATE = "code-generator/local-repository.java.ftl";
 
     private static final String LOCAL_SERVICE_TEMPLATE = "code-generator/local-service.java.ftl";
@@ -49,6 +51,10 @@ public class LocalCodeGeneratorServiceImpl implements LocalCodeGeneratorService 
     private static final String LOCAL_RES_VO_TEMPLATE = "code-generator/local-res-vo.java.ftl";
 
     private static final String DEFAULT_ENTITY_FIELD_COMMENT = "默认注释";
+
+    private static final Set<String> COMMON_FIELD_COLUMN_NAMES = Set.of("id", "cjsj", "gxsj", "czz", "yxx");
+
+    private static final Set<String> COMMON_FIELD_ENTITY_NAMES = Set.of("id", "createdtime", "updatedtime", "operator", "valid");
 
     private final CreateTableSqlParser createTableSqlParser;
 
@@ -180,11 +186,15 @@ public class LocalCodeGeneratorServiceImpl implements LocalCodeGeneratorService 
         dataModel.put("baseClassName", baseClassName);
         dataModel.put("lowerBaseClassName", lowerBaseClassName);
         dataModel.put("tableName", tableMeta.getTableName());
-        dataModel.put("entityFields", normalizeEntityFieldComments(request.getEntityFields()));
+        List<LocalEntityFieldReqVo> normalizedEntityFields = normalizeEntityFieldComments(request.getEntityFields());
+        dataModel.put("entityFields", normalizedEntityFields);
+        dataModel.put("businessFields", filterBusinessFields(normalizedEntityFields));
 
         dataModel.put("repositoryPackageName", basePackageName + ".repository");
         dataModel.put("repositoryClassName", baseClassName + "Repository");
         dataModel.put("repositoryFieldName", lowerBaseClassName + "Repository");
+        dataModel.put("beanPackageName", basePackageName + ".service.bean");
+        dataModel.put("beanClassName", baseClassName + "Bean");
         dataModel.put("servicePackageName", basePackageName + ".service");
         dataModel.put("serviceClassName", baseClassName + "Service");
         dataModel.put("serviceFieldName", lowerBaseClassName + "Service");
@@ -222,14 +232,37 @@ public class LocalCodeGeneratorServiceImpl implements LocalCodeGeneratorService 
         for (LocalEntityFieldReqVo entityField : entityFields) {
             if (entityField.getEntityComment() == null || entityField.getEntityComment().isBlank()) {
                 entityField.setEntityComment(DEFAULT_ENTITY_FIELD_COMMENT);
+            } else {
+                entityField.setEntityComment(entityField.getEntityComment().trim());
             }
         }
         return entityFields;
     }
 
+    private List<LocalEntityFieldReqVo> filterBusinessFields(List<LocalEntityFieldReqVo> entityFields) {
+        // 公共字段由 BaseEntity/BaseBean 承载，模板只遍历业务字段，避免生成重复成员或重复接口字段。
+        return entityFields.stream()
+                .filter(entityField -> !isCommonField(entityField))
+                .toList();
+    }
+
+    private boolean isCommonField(LocalEntityFieldReqVo entityField) {
+        String columnName = normalizeName(entityField.getColumnName());
+        String entityName = normalizeName(entityField.getEntityName());
+        return COMMON_FIELD_COLUMN_NAMES.contains(columnName) || COMMON_FIELD_ENTITY_NAMES.contains(entityName);
+    }
+
+    private String normalizeName(String name) {
+        if (name == null) {
+            return "";
+        }
+        return name.trim().replace("_", "").toLowerCase(Locale.ROOT);
+    }
+
     private String resolveTargetPackageName(LocalGenerateContentType contentType, Map<String, Object> dataModel) {
         return switch (contentType) {
             case ENTITY -> dataModel.get("entityPackageName").toString();
+            case BEAN -> dataModel.get("beanPackageName").toString();
             case REPOSITORY -> dataModel.get("repositoryPackageName").toString();
             case SERVICE -> dataModel.get("servicePackageName").toString();
             case SERVICE_IMPL -> dataModel.get("serviceImplPackageName").toString();
@@ -242,6 +275,7 @@ public class LocalCodeGeneratorServiceImpl implements LocalCodeGeneratorService 
     private String resolveTargetClassName(LocalGenerateContentType contentType, Map<String, Object> dataModel) {
         return switch (contentType) {
             case ENTITY -> dataModel.get("entityClassName").toString();
+            case BEAN -> dataModel.get("beanClassName").toString();
             case REPOSITORY -> dataModel.get("repositoryClassName").toString();
             case SERVICE -> dataModel.get("serviceClassName").toString();
             case SERVICE_IMPL -> dataModel.get("serviceImplClassName").toString();
@@ -254,6 +288,7 @@ public class LocalCodeGeneratorServiceImpl implements LocalCodeGeneratorService 
     private String resolveTemplateName(LocalGenerateContentType contentType) {
         return switch (contentType) {
             case ENTITY -> LOCAL_ENTITY_TEMPLATE;
+            case BEAN -> LOCAL_BEAN_TEMPLATE;
             case REPOSITORY -> LOCAL_REPOSITORY_TEMPLATE;
             case SERVICE -> LOCAL_SERVICE_TEMPLATE;
             case SERVICE_IMPL -> LOCAL_SERVICE_IMPL_TEMPLATE;

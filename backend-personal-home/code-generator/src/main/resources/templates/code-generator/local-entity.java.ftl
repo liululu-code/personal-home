@@ -1,5 +1,6 @@
 package ${packageName};
 
+import common.lll44556.top.entity.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
@@ -8,9 +9,9 @@ import lombok.Data;
 @Data
 @Entity
 @Table(name = "${tableName}")
-public class ${entityClassName} {
+public class ${entityClassName} extends BaseEntity {
 
-<#list entityFields as field>
+<#list businessFields as field>
     /**
      * ${field.entityComment}
      */

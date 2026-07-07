@@ -164,7 +164,11 @@
               {{ row.defaultValue ?? '-' }}
             </template>
           </el-table-column>
-          <el-table-column prop="comment" label="字段注释" min-width="140" />
+          <el-table-column prop="comment" label="字段注释" min-width="170">
+            <template #default="{ row }: { row: LocalColumnInfo }">
+              <el-input v-model="row.comment" placeholder="请输入字段注释" />
+            </template>
+          </el-table-column>
         </el-table>
       </section>
 
@@ -219,6 +223,7 @@ const outputTypeOptions: OutputTypeOption[] = [
 
 const localContentTypeOptions: LocalContentTypeOption[] = [
   { label: 'Entity', value: 'ENTITY' },
+  { label: 'Bean', value: 'BEAN' },
   { label: 'Repository', value: 'REPOSITORY' },
   { label: 'Service', value: 'SERVICE' },
   { label: 'ServiceImpl', value: 'SERVICE_IMPL' },
@@ -346,7 +351,7 @@ const handleLocalGenerate = async () => {
       columnName: column.columnName,
       entityType: column.entityType.trim(),
       entityName: column.entityName.trim(),
-      entityComment: column.comment?.trim() || '默认注释',
+      entityComment: column.comment?.trim() || '',
     }))
     const response = await generateLocalCode({ ...localForm, entityFields })
     localGenerateResult.value = [
