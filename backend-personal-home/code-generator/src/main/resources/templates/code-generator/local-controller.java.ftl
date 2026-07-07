@@ -14,6 +14,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+/**
+ * @Description: ${descriptionName} 控制器
+ * @author: ${author}
+ * @date: ${date}
+ */
 @RestController
 @AllArgsConstructor
 @RequestMapping("/api/${lowerBaseClassName}")

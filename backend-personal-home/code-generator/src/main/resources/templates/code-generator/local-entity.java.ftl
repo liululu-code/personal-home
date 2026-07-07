@@ -1,11 +1,16 @@
 package ${packageName};
 
-import common.lll44556.top.entity.BaseEntity;
+import ${baseEntityPackageName}.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import lombok.Data;
 
+/**
+ * @Description: ${descriptionName}
+ * @author: ${author}
+ * @date: ${date}
+ */
 @Data
 @Entity
 @Table(name = "${tableName}")

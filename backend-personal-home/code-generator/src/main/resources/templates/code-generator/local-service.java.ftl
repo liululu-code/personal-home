@@ -5,6 +5,11 @@ import ${resVoPackageName}.${resVoClassName};
 
 import java.util.List;
 
+/**
+ * @Description: ${descriptionName}
+ * @author: ${author}
+ * @date: ${date}
+ */
 public interface ${serviceClassName} {
 
     ${resVoClassName} save(${reqVoClassName} request);

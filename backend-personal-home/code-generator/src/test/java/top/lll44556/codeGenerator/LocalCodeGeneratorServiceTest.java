@@ -13,6 +13,8 @@ import top.lll44556.codeGenerator.vo.codeGenerator.req.LocalGenerateReqVo;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -71,16 +73,25 @@ class LocalCodeGeneratorServiceTest {
         String reqVoContent = readGeneratedJava("top.lll44556.demo.vo.req", "UserReqVO");
         String resVoContent = readGeneratedJava("top.lll44556.demo.vo.res", "UserResVO");
         String beanContent = readGeneratedJava("top.lll44556.demo.service.bean", "UserBean");
+        String today = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
 
         // Entity 和 Bean 通过基类承载公共字段，生成模板不能重复声明这些通用成员。
         assertTrue(entityContent.contains("import common.lll44556.top.entity.BaseEntity;"));
         assertTrue(entityContent.contains("public class UserEntity extends BaseEntity"));
         assertTrue(beanContent.contains("import common.lll44556.top.bean.BaseBean;"));
         assertTrue(beanContent.contains("public class UserBean extends BaseBean"));
+        assertTrue(!entityContent.contains("${base"));
+        assertTrue(!beanContent.contains("${base"));
         assertNoCommonFieldDeclaration(entityContent);
         assertNoCommonFieldDeclaration(beanContent);
         assertNoCommonFieldDeclaration(reqVoContent);
         assertNoCommonFieldDeclaration(resVoContent);
+
+        // 本地生成的 Java 文件需要统一带上文件头信息，便于落盘后追踪来源。
+        assertGeneratedClassHeader(entityContent, "User", today);
+        assertGeneratedClassHeader(beanContent, "User", today);
+        assertGeneratedClassHeader(reqVoContent, "User", today);
+        assertGeneratedClassHeader(resVoContent, "User", today);
 
         // Entity 不参与 OpenAPI 入出参描述，因此不能生成任何 Schema 注解。
         assertTrue(!entityContent.contains("io.swagger.v3.oas.annotations.media.Schema"));
@@ -121,5 +132,11 @@ class LocalCodeGeneratorServiceTest {
     private void assertGeneratedFieldComment(String content, String comment) {
         assertTrue(content.contains("* " + comment));
         assertTrue(content.contains("@Schema(title = \"" + comment + "\")"));
+    }
+
+    private void assertGeneratedClassHeader(String content, String descriptionName, String date) {
+        assertTrue(content.contains("* @Description: " + descriptionName));
+        assertTrue(content.contains("* @author: lll"));
+        assertTrue(content.contains("* @date: " + date));
     }
 }

@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -179,6 +181,13 @@ public class LocalCodeGeneratorServiceImpl implements LocalCodeGeneratorService 
         String lowerBaseClassName = toLowerFirst(baseClassName);
 
         Map<String, Object> dataModel = new HashMap<>();
+        dataModel.put("author", "lll");
+        dataModel.put("date", LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
+        dataModel.put("descriptionName", baseClassName);
+
+        dataModel.put("baseEntityPackageName", "common.lll44556.top.entity");
+        dataModel.put("baseBeanPackageName", "common.lll44556.top.bean");
+
         dataModel.put("packageName", entityPackageName);
         dataModel.put("entityPackageName", entityPackageName);
         dataModel.put("entityClassName", entityClassName);
@@ -193,17 +202,22 @@ public class LocalCodeGeneratorServiceImpl implements LocalCodeGeneratorService 
         dataModel.put("repositoryPackageName", basePackageName + ".repository");
         dataModel.put("repositoryClassName", baseClassName + "Repository");
         dataModel.put("repositoryFieldName", lowerBaseClassName + "Repository");
+
         dataModel.put("beanPackageName", basePackageName + ".service.bean");
         dataModel.put("beanClassName", baseClassName + "Bean");
+
         dataModel.put("servicePackageName", basePackageName + ".service");
         dataModel.put("serviceClassName", baseClassName + "Service");
         dataModel.put("serviceFieldName", lowerBaseClassName + "Service");
         dataModel.put("serviceImplPackageName", basePackageName + ".service.impl");
         dataModel.put("serviceImplClassName", baseClassName + "ServiceImpl");
+
         dataModel.put("controllerPackageName", basePackageName + ".controller");
         dataModel.put("controllerClassName", baseClassName + "Controller");
+
         dataModel.put("reqVoPackageName", basePackageName + ".vo.req");
         dataModel.put("reqVoClassName", baseClassName + "ReqVO");
+
         dataModel.put("resVoPackageName", basePackageName + ".vo.res");
         dataModel.put("resVoClassName", baseClassName + "ResVO");
         return dataModel;

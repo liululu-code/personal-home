@@ -1,11 +1,16 @@
 package ${beanPackageName};
 
-import common.lll44556.top.bean.BaseBean;
+import ${baseBeanPackageName}.BaseBean;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * @Description: ${descriptionName}
+ * @author: ${author}
+ * @date: ${date}
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

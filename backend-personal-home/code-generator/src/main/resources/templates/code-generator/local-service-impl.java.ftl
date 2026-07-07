@@ -11,6 +11,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+/**
+ * @Description: ${descriptionName} 服务实现
+ * @author: ${author}
+ * @date: ${date}
+ */
 @Service
 @AllArgsConstructor
 public class ${serviceImplClassName} implements ${serviceClassName} {
