@@ -15,7 +15,7 @@ const apiBaseURL = import.meta.env.VITE_API_BASE_URL
 
 const request = axios.create({
   baseURL: apiBaseURL,
-  timeout: 5000,
+  timeout: 20000,
 })
 
 function normalizeBaseURL(config: InternalAxiosRequestConfig) {
