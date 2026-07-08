@@ -11,7 +11,7 @@
 NEXUS_USERNAME=lll-nexus账号
 NEXUS_PASSWORD=lll-nexus密码
 
-
+runner1
 
 
 
