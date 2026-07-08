@@ -7,4 +7,5 @@ test-job:
   tags:
     - runner
   script:
+    - cd backend-personal-home
     - echo "GitLab Runner is working"
