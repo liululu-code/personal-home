@@ -118,6 +118,7 @@ build/
 # 如果这些目录中有需要提交的初始化文件，可用 .gitkeep 保留目录
 ############################
 uploads/
+backend-personal-home/file/
 
 ############################
 # Keep important config files tracked
