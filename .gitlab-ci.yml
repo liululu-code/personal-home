@@ -1,11 +1,23 @@
 stages:
-  - test
+  - build
 
-test-job:
-  stage: test
-  image: alpine:latest
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
+
+cache:
+  paths:
+    - backend-personal-home/.m2/repository
+
+backend-package:
+  stage: build
+  image: maven:3.9-eclipse-temurin-17
   tags:
     - runner
   script:
     - cd backend-personal-home
-    - echo "GitLab Runner is working"
+    - mvn clean package
+  artifacts:
+    when: always
+    expire_in: 7 days
+    paths:
+      - backend-personal-home/*/target/*.jar
