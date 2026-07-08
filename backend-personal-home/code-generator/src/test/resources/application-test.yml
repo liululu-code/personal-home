@@ -1,0 +1,20 @@
+server:
+  port: 8081
+
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://f117.lll44556.top:5005/personal_home?currentSchema=public
+    username: lll
+    password: lll44556
+    type: com.zaxxer.hikari.HikariDataSource
+
+
+
+
+
+
+
+
+
+

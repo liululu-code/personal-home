@@ -1,0 +1,13 @@
+package top.lll44556.common;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+
+@SpringBootTest(classes = CommonTestApplication.class)
+class CommonApplicationTests {
+
+    @Test
+    void contextLoads() {
+    }
+
+}

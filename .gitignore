@@ -1,24 +1,127 @@
-# Compiled class file
-*.class
+############################
+# OS / Editor / IDE
+############################
+.DS_Store
+Thumbs.db
 
-# Log file
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+############################
+# Logs
+############################
 *.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
 
-# BlueJ files
-*.ctxt
+############################
+# Temp / Cache
+############################
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+.cache/
+.temp/
+tmp/
+temp/
 
-# Mobile Tools for Java (J2ME)
-.mtj.tmp/
+############################
+# Frontend: Node / Vite / Vue
+############################
+node_modules/
+dist/
+.vite/
+.cache/
+coverage/
 
-# Package Files #
+# Package manager cache / store
+.pnpm-store/
+.yarn/cache/
+.yarn/unplugged/
+.yarn/build-state.yml
+.yarn/install-state.gz
+
+# Optional frontend cache
+.eslintcache
+.stylelintcache
+
+############################
+# Frontend Env Files
+# 本地环境配置建议忽略
+############################
+# .env.local
+# .env.*.local
+
+# 保留示例环境配置文件
+!.env.example
+!.env.*.example
+
+############################
+# Backend: Maven / Spring Boot
+############################
+target/
+
+# Spring Boot temporary files
+.springBeans
+.sts4-cache/
+
+# Application local config
+# 如果 application-dev.yml 是团队共享配置，不建议忽略
+# src/main/resources/application-local.yml
+# src/main/resources/application-local.yaml
+# src/main/resources/application-dev.yml
+# src/main/resources/application-dev.yaml
+
+############################
+# Java / Maven / Eclipse / IDEA
+############################
+*.class
 *.jar
 *.war
-*.nar
 *.ear
-*.zip
-*.tar.gz
-*.rar
 
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
-hs_err_pid*
-replay_pid*
+.project
+.classpath
+.settings/
+.factorypath
+
+# Generated files
+out/
+build/
+
+############################
+# Maven Wrapper
+# 注意：mvnw 和 Maven Wrapper jar 应该提交
+############################
+!mvnw
+!mvnw.cmd
+!.mvn/wrapper/maven-wrapper.properties
+!.mvn/wrapper/maven-wrapper.jar
+
+############################
+# Runtime files
+############################
+*.pid
+*.seed
+*.pid.lock
+
+############################
+# Upload / generated data
+# 如果这些目录中有需要提交的初始化文件，可用 .gitkeep 保留目录
+############################
+uploads/
+backend-personal-home/file/
+
+############################
+# Keep important config files tracked
+############################
+!src/main/resources/application.yml
+!src/main/resources/application.yaml

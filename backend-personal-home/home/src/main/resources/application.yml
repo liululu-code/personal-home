@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: home
+
+  profiles:
+    active: dev
