@@ -2,9 +2,12 @@ package ${convertPackageName};
 
 import ${beanPackageName}.${beanClassName};
 import ${entityPackageName}.${entityClassName};
+import ${reqVoPackageName}.${listReqVoClassName};
 import ${reqVoPackageName}.${reqVoClassName};
 import ${resVoPackageName}.${resVoClassName};
+import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
+import org.mapstruct.MappingTarget;
 import org.mapstruct.factory.Mappers;
 
 import java.util.List;
@@ -34,6 +37,22 @@ public interface ${convertClassName} {
      * @return Bean 列表
      */
     List<${beanClassName}> convertSaveReqVOToBeanList(List<${reqVoClassName}> voList);
+
+    /**
+     * ListReqVO 转换为 Bean
+     *
+     * @param vo 请求参数
+     * @return Bean
+     */
+    ${beanClassName} convertListReqVOToBean(${listReqVoClassName} vo);
+
+    /**
+     * ListReqVO 列表转换为 Bean 列表
+     *
+     * @param voList 请求参数列表
+     * @return Bean 列表
+     */
+    List<${beanClassName}> convertListReqVOToBeanList(List<${listReqVoClassName}> voList);
 
     /**
      * Bean 转换为 Entity
@@ -66,6 +85,17 @@ public interface ${convertClassName} {
      * @return Bean 列表
      */
     List<${beanClassName}> convertEntityToBeanList(List<${entityClassName}> entityList);
+
+    /**
+     * Entity 转换为 Bean 后的字典字段占位处理
+     *
+     * @param entity Entity 参数
+     * @param bean Bean 参数
+     */
+    @AfterMapping
+    default void afterConvertEntityToBean(${entityClassName} entity, @MappingTarget ${beanClassName} bean) {
+        ;
+    }
 
     /**
      * Bean 转换为 ResVO

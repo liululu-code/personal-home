@@ -12,16 +12,17 @@ import java.util.List;
 public interface ${nativeQueryClassName} {
 
     /**
-     * @Description: 查询${descriptionName}列表
-     * @author: ${author}
-     * @date: ${date}
+     * 查询${descriptionName}列表。
+     *
+     * @return ${descriptionName}列表
      */
     List<${entityClassName}> find${baseClassName}Condition();
 
     /**
-     * @Description: 查询${descriptionName}数量
-     * @author: ${author}
-     * @date: ${date}
+     * 查询${descriptionName}总数。
+     *
+     * @return ${descriptionName}总数
      */
     Integer find${baseClassName}Total();
+
 }

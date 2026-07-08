@@ -101,6 +101,30 @@
               placeholder="请输入成功响应函数名，例如 success"
             />
           </el-form-item>
+          <el-form-item label="分页结果类包名">
+            <el-input
+              v-model="localForm.pageResultPackageName"
+              placeholder="请输入分页结果类包名，例如 common.lll44556.top.page"
+            />
+          </el-form-item>
+          <el-form-item label="分页参数类包名">
+            <el-input
+              v-model="localForm.paginationPackageName"
+              placeholder="请输入分页参数类包名，例如 common.lll44556.top.page"
+            />
+          </el-form-item>
+          <el-form-item label="分页请求类包名">
+            <el-input
+              v-model="localForm.paginationReqVoPackageName"
+              placeholder="请输入分页请求类包名，例如 common.lll44556.top.page"
+            />
+          </el-form-item>
+          <el-form-item label="分页工具类包名">
+            <el-input
+              v-model="localForm.pageUtilPackageName"
+              placeholder="请输入分页工具类包名，例如 common.lll44556.top.util"
+            />
+          </el-form-item>
         </div>
 
         <el-form-item label="建表语句">
@@ -250,7 +274,9 @@ const localContentTypeOptions: LocalContentTypeOption[] = [
   { label: 'Controller', value: 'CONTROLLER' },
   { label: 'Convert', value: 'CONVERT' },
   { label: 'ReqVO', value: 'REQ_VO' },
+  { label: 'ListReqVO', value: 'LIST_REQ_VO' },
   { label: 'ResVO', value: 'RES_VO' },
+  { label: 'PageSupport', value: 'PAGE_SUPPORT' },
 ]
 
 const entityTypeOptions = [
@@ -283,6 +309,10 @@ const localForm = reactive<LocalGenerateRequest>({
   responseClassPackageName: 'top.lll44556.common.util',
   responseClassName: 'Result',
   responseSuccessMethodName: 'success',
+  pageResultPackageName: 'common.lll44556.top.page',
+  paginationPackageName: 'common.lll44556.top.page',
+  paginationReqVoPackageName: 'common.lll44556.top.page',
+  pageUtilPackageName: 'common.lll44556.top.util',
 })
 
 const generating = ref(false)

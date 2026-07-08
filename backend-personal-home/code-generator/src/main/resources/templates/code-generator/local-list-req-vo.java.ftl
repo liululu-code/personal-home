@@ -6,21 +6,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @Description: ${descriptionName}
+ * @Description: ${descriptionName}列表查询参数
  * @author: ${author}
  * @date: ${date}
  */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Schema(title = "${reqVoClassName}")
-public class ${reqVoClassName} {
-
-    /**
-     * 主键 ID
-     */
-    @Schema(title = "主键 ID")
-    private String id;
+@Schema(title = "${listReqVoClassName}")
+public class ${listReqVoClassName} {
 
 <#list businessFields as field>
     /**

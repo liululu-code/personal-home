@@ -19,7 +19,9 @@ export type LocalGenerateContentType =
   | 'CONTROLLER'
   | 'CONVERT'
   | 'REQ_VO'
+  | 'LIST_REQ_VO'
   | 'RES_VO'
+  | 'PAGE_SUPPORT'
 
 export interface CodeGenerateRequest {
   inputType: InputType
@@ -68,6 +70,10 @@ export interface LocalGenerateRequest {
   responseClassPackageName: string
   responseClassName: string
   responseSuccessMethodName: string
+  pageResultPackageName: string
+  paginationPackageName: string
+  paginationReqVoPackageName: string
+  pageUtilPackageName: string
 }
 
 export interface LocalEntityField {

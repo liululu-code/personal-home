@@ -56,7 +56,17 @@ public class LocalCodeGeneratorServiceImpl implements LocalCodeGeneratorService 
 
     private static final String LOCAL_REQ_VO_TEMPLATE = "code-generator/local-req-vo.java.ftl";
 
+    private static final String LOCAL_LIST_REQ_VO_TEMPLATE = "code-generator/local-list-req-vo.java.ftl";
+
     private static final String LOCAL_RES_VO_TEMPLATE = "code-generator/local-res-vo.java.ftl";
+
+    private static final String LOCAL_PAGE_RESULT_TEMPLATE = "code-generator/local-page-result.java.ftl";
+
+    private static final String LOCAL_PAGINATION_TEMPLATE = "code-generator/local-pagination.java.ftl";
+
+    private static final String LOCAL_PAGINATION_REQ_VO_TEMPLATE = "code-generator/local-pagination-req-vo.java.ftl";
+
+    private static final String LOCAL_PAGE_UTIL_TEMPLATE = "code-generator/local-page-util.java.ftl";
 
     private static final String DEFAULT_ENTITY_FIELD_COMMENT = "默认注释";
 
@@ -65,6 +75,10 @@ public class LocalCodeGeneratorServiceImpl implements LocalCodeGeneratorService 
     private static final String DEFAULT_RESPONSE_CLASS_NAME = "Result";
 
     private static final String DEFAULT_RESPONSE_SUCCESS_METHOD_NAME = "success";
+
+    private static final String DEFAULT_PAGE_PACKAGE_NAME = "common.lll44556.top.page";
+
+    private static final String DEFAULT_PAGE_UTIL_PACKAGE_NAME = "common.lll44556.top.util";
 
     private static final Set<String> COMMON_FIELD_COLUMN_NAMES = Set.of("id", "cjsj", "gxsj", "czz", "yxx");
 
@@ -106,7 +120,9 @@ public class LocalCodeGeneratorServiceImpl implements LocalCodeGeneratorService 
         Map<String, Object> dataModel = buildLocalGenerateDataModel(request, tableMeta);
         List<String> generatedFiles = new ArrayList<>();
         for (LocalGenerateContentType contentType : request.getContentTypes()) {
-            generatedFiles.add(contentType.name() + "：已生成 " + generateFile(request, contentType, dataModel));
+            for (String generatedFile : generateFiles(request, contentType, dataModel)) {
+                generatedFiles.add(contentType.name() + "：已生成 " + generatedFile);
+            }
         }
 
         return new LocalGenerateResVo(
@@ -215,6 +231,7 @@ public class LocalCodeGeneratorServiceImpl implements LocalCodeGeneratorService 
         dataModel.put("repositoryClassName", baseClassName + "Repository");
         dataModel.put("repositoryFieldName", lowerBaseClassName + "Repository");
         dataModel.put("nativeQueryPackageName", basePackageName + ".service.nativequery");
+        dataModel.put("nativeQueryPostgreSQLPackageName", basePackageName + ".service.nativequery.postgresql");
         dataModel.put("nativeQueryClassName", baseClassName + "NativeQuery");
         dataModel.put("nativeQueryPostgreSQLClassName", baseClassName + "NativeQueryPostgreSQL");
 
@@ -235,15 +252,55 @@ public class LocalCodeGeneratorServiceImpl implements LocalCodeGeneratorService 
                 request.getResponseClassName(), DEFAULT_RESPONSE_CLASS_NAME));
         dataModel.put("responseSuccessMethodName", resolveTemplateValue(
                 request.getResponseSuccessMethodName(), DEFAULT_RESPONSE_SUCCESS_METHOD_NAME));
+        dataModel.put("pageResultPackageName", resolveTemplateValue(
+                request.getPageResultPackageName(), DEFAULT_PAGE_PACKAGE_NAME));
+        dataModel.put("paginationPackageName", resolveTemplateValue(
+                request.getPaginationPackageName(), DEFAULT_PAGE_PACKAGE_NAME));
+        dataModel.put("paginationReqVoPackageName", resolveTemplateValue(
+                request.getPaginationReqVoPackageName(), DEFAULT_PAGE_PACKAGE_NAME));
+        dataModel.put("pageUtilPackageName", resolveTemplateValue(
+                request.getPageUtilPackageName(), DEFAULT_PAGE_UTIL_PACKAGE_NAME));
+        dataModel.put("pageResultClassName", "PageResult");
+        dataModel.put("paginationClassName", "Pagination");
+        dataModel.put("paginationReqVoClassName", "PaginationReqVO");
+        dataModel.put("pageUtilClassName", "PageUtil");
         dataModel.put("convertPackageName", basePackageName + ".convert");
         dataModel.put("convertClassName", baseClassName + "Convert");
 
         dataModel.put("reqVoPackageName", basePackageName + ".vo.req");
         dataModel.put("reqVoClassName", baseClassName + "SaveReqVO");
+        dataModel.put("listReqVoClassName", baseClassName + "ListReqVO");
 
         dataModel.put("resVoPackageName", basePackageName + ".vo.res");
         dataModel.put("resVoClassName", baseClassName + "ResVO");
         return dataModel;
+    }
+
+    private List<String> generateFiles(LocalGenerateReqVo request,
+                                       LocalGenerateContentType contentType,
+                                       Map<String, Object> dataModel) {
+        if (contentType != LocalGenerateContentType.PAGE_SUPPORT) {
+            return List.of(generateFile(request, contentType, dataModel));
+        }
+
+        return List.of(
+                generateFile(request, LOCAL_PAGE_RESULT_TEMPLATE,
+                        dataModel.get("pageResultPackageName").toString(),
+                        dataModel.get("pageResultClassName").toString(),
+                        dataModel),
+                generateFile(request, LOCAL_PAGINATION_TEMPLATE,
+                        dataModel.get("paginationPackageName").toString(),
+                        dataModel.get("paginationClassName").toString(),
+                        dataModel),
+                generateFile(request, LOCAL_PAGINATION_REQ_VO_TEMPLATE,
+                        dataModel.get("paginationReqVoPackageName").toString(),
+                        dataModel.get("paginationReqVoClassName").toString(),
+                        dataModel),
+                generateFile(request, LOCAL_PAGE_UTIL_TEMPLATE,
+                        dataModel.get("pageUtilPackageName").toString(),
+                        dataModel.get("pageUtilClassName").toString(),
+                        dataModel)
+        );
     }
 
     private String generateFile(LocalGenerateReqVo request,
@@ -252,6 +309,14 @@ public class LocalCodeGeneratorServiceImpl implements LocalCodeGeneratorService 
         String targetPackageName = resolveTargetPackageName(contentType, dataModel);
         String targetClassName = resolveTargetClassName(contentType, dataModel);
         String templateName = resolveTemplateName(contentType);
+        return generateFile(request, templateName, targetPackageName, targetClassName, dataModel);
+    }
+
+    private String generateFile(LocalGenerateReqVo request,
+                                String templateName,
+                                String targetPackageName,
+                                String targetClassName,
+                                Map<String, Object> dataModel) {
         String fileContent = templateRenderService.render(templateName, dataModel);
         Path filePath = buildJavaFilePath(request.getOutputDirectory(), targetPackageName, targetClassName);
 
@@ -308,13 +373,16 @@ public class LocalCodeGeneratorServiceImpl implements LocalCodeGeneratorService 
             case ENTITY -> dataModel.get("entityPackageName").toString();
             case BEAN -> dataModel.get("beanPackageName").toString();
             case REPOSITORY -> dataModel.get("repositoryPackageName").toString();
-            case NATIVE_QUERY, NATIVE_QUERY_POSTGRESQL -> dataModel.get("nativeQueryPackageName").toString();
+            case NATIVE_QUERY -> dataModel.get("nativeQueryPackageName").toString();
+            case NATIVE_QUERY_POSTGRESQL -> dataModel.get("nativeQueryPostgreSQLPackageName").toString();
             case SERVICE -> dataModel.get("servicePackageName").toString();
             case SERVICE_IMPL -> dataModel.get("serviceImplPackageName").toString();
             case CONTROLLER -> dataModel.get("controllerPackageName").toString();
             case CONVERT -> dataModel.get("convertPackageName").toString();
             case REQ_VO -> dataModel.get("reqVoPackageName").toString();
+            case LIST_REQ_VO -> dataModel.get("reqVoPackageName").toString();
             case RES_VO -> dataModel.get("resVoPackageName").toString();
+            case PAGE_SUPPORT -> dataModel.get("pageResultPackageName").toString();
         };
     }
 
@@ -330,7 +398,9 @@ public class LocalCodeGeneratorServiceImpl implements LocalCodeGeneratorService 
             case CONTROLLER -> dataModel.get("controllerClassName").toString();
             case CONVERT -> dataModel.get("convertClassName").toString();
             case REQ_VO -> dataModel.get("reqVoClassName").toString();
+            case LIST_REQ_VO -> dataModel.get("listReqVoClassName").toString();
             case RES_VO -> dataModel.get("resVoClassName").toString();
+            case PAGE_SUPPORT -> dataModel.get("pageResultClassName").toString();
         };
     }
 
@@ -346,7 +416,9 @@ public class LocalCodeGeneratorServiceImpl implements LocalCodeGeneratorService 
             case CONTROLLER -> LOCAL_CONTROLLER_TEMPLATE;
             case CONVERT -> LOCAL_CONVERT_TEMPLATE;
             case REQ_VO -> LOCAL_REQ_VO_TEMPLATE;
+            case LIST_REQ_VO -> LOCAL_LIST_REQ_VO_TEMPLATE;
             case RES_VO -> LOCAL_RES_VO_TEMPLATE;
+            case PAGE_SUPPORT -> LOCAL_PAGE_RESULT_TEMPLATE;
         };
     }
 

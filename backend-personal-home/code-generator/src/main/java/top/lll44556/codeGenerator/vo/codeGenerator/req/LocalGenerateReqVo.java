@@ -45,4 +45,16 @@ public class LocalGenerateReqVo {
 
     @Schema(title = "成功响应函数名")
     private String responseSuccessMethodName;
+
+    @Schema(title = "分页结果类包名")
+    private String pageResultPackageName;
+
+    @Schema(title = "分页参数类包名")
+    private String paginationPackageName;
+
+    @Schema(title = "分页请求类包名")
+    private String paginationReqVoPackageName;
+
+    @Schema(title = "分页工具类包名")
+    private String pageUtilPackageName;
 }

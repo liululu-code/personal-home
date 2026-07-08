@@ -1,7 +1,10 @@
 package ${servicePackageName};
 
+import ${beanPackageName}.${beanClassName};
+import ${pageResultPackageName}.${pageResultClassName};
+import ${paginationReqVoPackageName}.${paginationReqVoClassName};
+import ${reqVoPackageName}.${listReqVoClassName};
 import ${reqVoPackageName}.${reqVoClassName};
-import ${resVoPackageName}.${resVoClassName};
 
 import java.util.List;
 
@@ -12,11 +15,11 @@ import java.util.List;
  */
 public interface ${serviceClassName} {
 
-    ${resVoClassName} save(${reqVoClassName} request);
+    ${beanClassName} save(${reqVoClassName} request);
 
-    List<${resVoClassName}> list();
+    ${pageResultClassName}<${beanClassName}> list(${paginationReqVoClassName}<${listReqVoClassName}> request);
 
-    ${resVoClassName} detail(String id);
+    ${beanClassName} detail(String id);
 
     Boolean delete(List<String> ids);
 }

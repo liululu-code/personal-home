@@ -1,6 +1,7 @@
-package ${nativeQueryPackageName};
+package ${nativeQueryPostgreSQLPackageName};
 
 import ${entityPackageName}.${entityClassName};
+import ${nativeQueryPackageName}.${nativeQueryClassName};
 import ${repositoryPackageName}.${repositoryClassName};
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -27,4 +28,5 @@ public class ${nativeQueryPostgreSQLClassName} implements ${nativeQueryClassName
     public Integer find${baseClassName}Total() {
         return ${repositoryFieldName}.count${baseClassName}ConditionByNativeQuery();
     }
+
 }

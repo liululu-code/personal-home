@@ -11,5 +11,7 @@ public enum LocalGenerateContentType {
     CONTROLLER,
     CONVERT,
     REQ_VO,
-    RES_VO
+    LIST_REQ_VO,
+    RES_VO,
+    PAGE_SUPPORT
 }
