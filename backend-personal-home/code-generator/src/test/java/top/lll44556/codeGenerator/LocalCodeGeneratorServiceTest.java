@@ -179,9 +179,9 @@ class LocalCodeGeneratorServiceTest {
         assertTrue(controllerContent.contains("import common.lll44556.top.page.PageResult;"));
         assertTrue(controllerContent.contains("import common.lll44556.top.page.PaginationReqVO;"));
         assertTrue(controllerContent.contains("import top.lll44556.demo.vo.req.UserListReqVO;"));
-        assertTrue(controllerContent.contains("import io.swagger.annotations.Api;"));
         assertTrue(controllerContent.contains("import io.swagger.v3.oas.annotations.Operation;"));
-        assertTrue(controllerContent.contains("@Api(tags = \"User 控制器\")"));
+        assertTrue(controllerContent.contains("import io.swagger.v3.oas.annotations.tags.Tag;"));
+        assertTrue(controllerContent.contains("@Tag(name = \"User 控制器\")"));
         assertTrue(controllerContent.contains("@Operation(summary = \"保存User\", description = \"保存Userapi\")"));
         assertTrue(controllerContent.contains("@Operation(summary = \"获取User列表\", description = \"获取User列表api\")"));
         assertTrue(controllerContent.contains("@Operation(summary = \"获取User详情\", description = \"获取User详情api\")"));

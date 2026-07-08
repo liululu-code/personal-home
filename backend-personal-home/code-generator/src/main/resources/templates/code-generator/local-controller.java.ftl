@@ -7,8 +7,8 @@ import ${paginationReqVoPackageName}.${paginationReqVoClassName};
 import ${reqVoPackageName}.${listReqVoClassName};
 import ${reqVoPackageName}.${reqVoClassName};
 import ${servicePackageName}.${serviceClassName};
-import io.swagger.annotations.Api;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,7 +27,7 @@ import java.util.List;
 @RestController
 @AllArgsConstructor
 @RequestMapping("/api/${lowerBaseClassName}")
-@Api(tags = "${descriptionName} 控制器")
+@Tag(name = "${descriptionName} 控制器")
 public class ${controllerClassName} {
 
     private final ${serviceClassName} ${serviceFieldName};
