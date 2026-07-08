@@ -23,6 +23,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,6 +32,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 @Service
 @AllArgsConstructor
@@ -84,6 +88,12 @@ public class LocalCodeGeneratorServiceImpl implements LocalCodeGeneratorService 
 
     private static final Set<String> COMMON_FIELD_ENTITY_NAMES = Set.of("id", "createdtime", "updatedtime", "operator", "valid");
 
+    private static final String BACKEND_ROOT_DIR_NAME = "backend-personal-home";
+
+    private static final String OFFLINE_FILE_DIR_NAME = "file";
+
+    private static final DateTimeFormatter OFFLINE_TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
+
     private final CreateTableSqlParser createTableSqlParser;
 
     private final PostgresqlTypeClassifier postgresqlTypeClassifier;
@@ -118,17 +128,23 @@ public class LocalCodeGeneratorServiceImpl implements LocalCodeGeneratorService 
         checkEntityFieldsMatchTable(request.getEntityFields(), tableMeta);
 
         Map<String, Object> dataModel = buildLocalGenerateDataModel(request, tableMeta);
+        String baseClassName = dataModel.get("baseClassName").toString();
+        String timestamp = LocalDateTime.now().format(OFFLINE_TIMESTAMP_FORMATTER);
+        Path generatedDirectory = createUniqueGeneratedDirectory(baseClassName, timestamp);
         List<String> generatedFiles = new ArrayList<>();
         for (LocalGenerateContentType contentType : request.getContentTypes()) {
-            for (String generatedFile : generateFiles(request, contentType, dataModel)) {
+            for (String generatedFile : generateFiles(generatedDirectory, contentType, dataModel)) {
                 generatedFiles.add(contentType.name() + "：已生成 " + generatedFile);
             }
         }
 
+        Path zipFilePath = zipGeneratedDirectory(generatedDirectory, generatedDirectory.getFileName() + ".zip");
         return new LocalGenerateResVo(
-                request.getOutputDirectory(),
+                generatedDirectory.toString(),
+                zipFilePath.toString(),
+                zipFilePath.getFileName().toString(),
                 generatedFiles,
-                "本地代码生成完成"
+                "离线代码生成完成"
         );
     }
 
@@ -152,7 +168,7 @@ public class LocalCodeGeneratorServiceImpl implements LocalCodeGeneratorService 
             throw new IllegalArgumentException("本地解析请求不能为空");
         }
         if (request.getDatabaseType() != DatabaseType.POSTGRESQL) {
-            throw new IllegalArgumentException("当前本地生成框架仅支持 PostgreSQL 建表 SQL");
+            throw new IllegalArgumentException("当前离线生成框架仅支持 PostgreSQL 建表 SQL");
         }
         if (request.getCreateTableSql() == null || request.getCreateTableSql().isBlank()) {
             throw new IllegalArgumentException("建表 SQL 不能为空");
@@ -163,9 +179,6 @@ public class LocalCodeGeneratorServiceImpl implements LocalCodeGeneratorService 
         checkParseRequest(new LocalParseTableReqVo(request == null ? null : request.getDatabaseType(),
                 request == null ? null : request.getCreateTableSql()));
 
-        if (request.getOutputDirectory() == null || request.getOutputDirectory().isBlank()) {
-            throw new IllegalArgumentException("本地生成文件夹不能为空");
-        }
         if (request.getPackageName() == null || request.getPackageName().isBlank()) {
             throw new IllegalArgumentException("Entity 包名不能为空");
         }
@@ -173,7 +186,7 @@ public class LocalCodeGeneratorServiceImpl implements LocalCodeGeneratorService 
             throw new IllegalArgumentException("Entity 类名不能为空");
         }
         if (request.getContentTypes() == null || request.getContentTypes().isEmpty()) {
-            throw new IllegalArgumentException("请选择至少一种本地生成内容");
+            throw new IllegalArgumentException("请选择至少一种离线生成内容");
         }
         if (request.getEntityFields() == null || request.getEntityFields().isEmpty()) {
             throw new IllegalArgumentException("请先解读字段，并确认 Entity 成员信息");
@@ -276,57 +289,57 @@ public class LocalCodeGeneratorServiceImpl implements LocalCodeGeneratorService 
         return dataModel;
     }
 
-    private List<String> generateFiles(LocalGenerateReqVo request,
+    private List<String> generateFiles(Path generatedDirectory,
                                        LocalGenerateContentType contentType,
                                        Map<String, Object> dataModel) {
         if (contentType != LocalGenerateContentType.PAGE_SUPPORT) {
-            return List.of(generateFile(request, contentType, dataModel));
+            return List.of(generateFile(generatedDirectory, contentType, dataModel));
         }
 
         return List.of(
-                generateFile(request, LOCAL_PAGE_RESULT_TEMPLATE,
+                generateFile(generatedDirectory, LOCAL_PAGE_RESULT_TEMPLATE,
                         dataModel.get("pageResultPackageName").toString(),
                         dataModel.get("pageResultClassName").toString(),
                         dataModel),
-                generateFile(request, LOCAL_PAGINATION_TEMPLATE,
+                generateFile(generatedDirectory, LOCAL_PAGINATION_TEMPLATE,
                         dataModel.get("paginationPackageName").toString(),
                         dataModel.get("paginationClassName").toString(),
                         dataModel),
-                generateFile(request, LOCAL_PAGINATION_REQ_VO_TEMPLATE,
+                generateFile(generatedDirectory, LOCAL_PAGINATION_REQ_VO_TEMPLATE,
                         dataModel.get("paginationReqVoPackageName").toString(),
                         dataModel.get("paginationReqVoClassName").toString(),
                         dataModel),
-                generateFile(request, LOCAL_PAGE_UTIL_TEMPLATE,
+                generateFile(generatedDirectory, LOCAL_PAGE_UTIL_TEMPLATE,
                         dataModel.get("pageUtilPackageName").toString(),
                         dataModel.get("pageUtilClassName").toString(),
                         dataModel)
         );
     }
 
-    private String generateFile(LocalGenerateReqVo request,
+    private String generateFile(Path generatedDirectory,
                                 LocalGenerateContentType contentType,
                                 Map<String, Object> dataModel) {
         String targetPackageName = resolveTargetPackageName(contentType, dataModel);
         String targetClassName = resolveTargetClassName(contentType, dataModel);
         String templateName = resolveTemplateName(contentType);
-        return generateFile(request, templateName, targetPackageName, targetClassName, dataModel);
+        return generateFile(generatedDirectory, templateName, targetPackageName, targetClassName, dataModel);
     }
 
-    private String generateFile(LocalGenerateReqVo request,
+    private String generateFile(Path generatedDirectory,
                                 String templateName,
                                 String targetPackageName,
                                 String targetClassName,
                                 Map<String, Object> dataModel) {
         String fileContent = templateRenderService.render(templateName, dataModel);
-        Path filePath = buildJavaFilePath(request.getOutputDirectory(), targetPackageName, targetClassName);
+        Path filePath = buildJavaFilePath(generatedDirectory, targetPackageName, targetClassName);
 
         try {
             Files.createDirectories(filePath.getParent());
-            // 当前阶段直接覆盖同名文件，便于先跑通本地生成闭环；后续可补充覆盖确认或备份策略。
+            // 每次离线生成都落在独立目录中，单次目录内同名文件可直接写入，避免用户侧路径输入导致覆盖风险。
             Files.writeString(filePath, fileContent, StandardCharsets.UTF_8);
             return filePath.toString();
         } catch (IOException e) {
-            throw new IllegalStateException("本地代码文件写入失败: " + filePath, e);
+            throw new IllegalStateException("离线代码文件写入失败: " + filePath, e);
         }
     }
 
@@ -422,10 +435,81 @@ public class LocalCodeGeneratorServiceImpl implements LocalCodeGeneratorService 
         };
     }
 
-    private Path buildJavaFilePath(String outputDirectory, String packageName, String className) {
-        Path outputPath = Path.of(outputDirectory.trim());
+    private Path buildJavaFilePath(Path generatedDirectory, String packageName, String className) {
         Path packagePath = Path.of(packageName.trim().replace(".", "/"));
-        return outputPath.resolve(packagePath).resolve(className.trim() + ".java");
+        return generatedDirectory.resolve(packagePath).resolve(className.trim() + ".java");
+    }
+
+    private Path createUniqueGeneratedDirectory(String baseClassName, String timestamp) {
+        Path fileDirectory = resolveBackendRootDirectory().resolve(OFFLINE_FILE_DIR_NAME);
+        String baseDirectoryName = baseClassName + "_" + timestamp;
+
+        try {
+            Files.createDirectories(fileDirectory);
+            for (int index = 0; ; index++) {
+                String directoryName = index == 0 ? baseDirectoryName : baseDirectoryName + "_" + index;
+                Path generatedDirectory = fileDirectory.resolve(directoryName);
+                try {
+                    // 用 createDirectory 原子创建目录，避免并发请求拿到同一个生成目录。
+                    return Files.createDirectory(generatedDirectory);
+                } catch (java.nio.file.FileAlreadyExistsException ignored) {
+                    // 时间戳极端冲突时递增后缀继续尝试，保证每次生成结果独立保存。
+                }
+            }
+        } catch (IOException e) {
+            throw new IllegalStateException("离线生成目录创建失败: " + fileDirectory, e);
+        }
+    }
+
+    private Path resolveBackendRootDirectory() {
+        Path currentPath = Path.of(System.getProperty("user.dir")).toAbsolutePath().normalize();
+        Path childBackendRoot = currentPath.resolve(BACKEND_ROOT_DIR_NAME);
+        if (Files.isDirectory(childBackendRoot) && isBackendRootDirectory(childBackendRoot)) {
+            return childBackendRoot;
+        }
+
+        Path candidate = currentPath;
+        while (candidate != null) {
+            if (isBackendRootDirectory(candidate)) {
+                return candidate;
+            }
+            candidate = candidate.getParent();
+        }
+        throw new IllegalStateException("未找到后端项目根目录: " + currentPath);
+    }
+
+    private boolean isBackendRootDirectory(Path directory) {
+        if (directory.getFileName() != null && BACKEND_ROOT_DIR_NAME.equals(directory.getFileName().toString())) {
+            return true;
+        }
+
+        Path pomPath = directory.resolve("pom.xml");
+        if (!Files.isRegularFile(pomPath)) {
+            return false;
+        }
+        try {
+            String pomContent = Files.readString(pomPath, StandardCharsets.UTF_8);
+            return pomContent.contains("<artifactId>backend-personal-home</artifactId>");
+        } catch (IOException e) {
+            return false;
+        }
+    }
+
+    private Path zipGeneratedDirectory(Path generatedDirectory, String zipFileName) {
+        Path zipFilePath = generatedDirectory.getParent().resolve(zipFileName);
+        try (ZipOutputStream zipOutputStream = new ZipOutputStream(Files.newOutputStream(zipFilePath), StandardCharsets.UTF_8);
+             Stream<Path> generatedPaths = Files.walk(generatedDirectory)) {
+            for (Path path : generatedPaths.filter(Files::isRegularFile).toList()) {
+                Path relativePath = generatedDirectory.relativize(path);
+                ZipEntry zipEntry = new ZipEntry(relativePath.toString().replace("\\", "/"));
+                zipOutputStream.putNextEntry(zipEntry);
+                Files.copy(path, zipOutputStream);
+                zipOutputStream.closeEntry();
+            }
+            return zipFilePath;
+        } catch (IOException e) {
+            throw new IllegalStateException("离线生成 zip 文件创建失败: " + zipFilePath, e);
+        }
     }
 
     private String resolveBasePackageName(String entityPackageName) {

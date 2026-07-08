@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Schema(title = "本地生成字段信息")
+@Schema(title = "离线生成字段信息")
 public class LocalEntityFieldReqVo {
 
     @Schema(title = "数据库字段名")

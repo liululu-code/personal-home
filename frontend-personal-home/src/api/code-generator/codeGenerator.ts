@@ -1,4 +1,5 @@
 import request from '@/utils/request'
+import type { AxiosResponse } from 'axios'
 
 export type InputType = 'CREATE_TABLE_SQL'
 export type DatabaseType = 'POSTGRESQL'
@@ -66,7 +67,6 @@ export interface LocalGenerateRequest {
   entityClassName: string
   contentTypes: LocalGenerateContentType[]
   entityFields: LocalEntityField[]
-  outputDirectory: string
   responseClassPackageName: string
   responseClassName: string
   responseSuccessMethodName: string
@@ -81,12 +81,6 @@ export interface LocalEntityField {
   entityType: string
   entityName: string
   entityComment: string
-}
-
-export interface LocalGenerateResponse {
-  outputDirectory: string
-  plannedFiles: string[]
-  message: string
 }
 
 export interface ApiResponse<T> {
@@ -110,8 +104,12 @@ export function parseLocalTable(data: LocalParseTableRequest) {
 }
 
 export function generateLocalCode(data: LocalGenerateRequest) {
-  return request.post<ApiResponse<LocalGenerateResponse>, ApiResponse<LocalGenerateResponse>>(
+  return request.post<Blob, AxiosResponse<Blob>>(
     '/api/code-generator/local/generate',
     data,
+    {
+      rawResponse: true,
+      responseType: 'blob',
+    },
   )
 }

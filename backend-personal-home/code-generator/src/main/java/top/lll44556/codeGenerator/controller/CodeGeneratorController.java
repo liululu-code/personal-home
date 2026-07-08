@@ -2,6 +2,12 @@ package top.lll44556.codeGenerator.controller;
 
 import common.lll44556.top.util.R;
 import lombok.AllArgsConstructor;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,6 +20,9 @@ import top.lll44556.codeGenerator.vo.codeGenerator.req.LocalParseTableReqVo;
 import top.lll44556.codeGenerator.vo.codeGenerator.res.GenerateResVo;
 import top.lll44556.codeGenerator.vo.codeGenerator.res.LocalGenerateResVo;
 import top.lll44556.codeGenerator.vo.codeGenerator.res.LocalParseTableResVo;
+
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 
 @RestController
 @AllArgsConstructor
@@ -36,7 +45,17 @@ public class CodeGeneratorController {
     }
 
     @PostMapping("/local/generate")
-    public R<LocalGenerateResVo> generateLocal(@RequestBody LocalGenerateReqVo request) {
-        return R.ok(localCodeGeneratorService.generate(request));
+    public ResponseEntity<Resource> generateLocal(@RequestBody LocalGenerateReqVo request) {
+        LocalGenerateResVo generateResult = localCodeGeneratorService.generate(request);
+        Resource zipResource = new FileSystemResource(Path.of(generateResult.getZipFilePath()));
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType("application/zip"))
+                .header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.attachment()
+                        .filename(generateResult.getZipFileName(), StandardCharsets.UTF_8)
+                        .build()
+                        .toString())
+                .header(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS, HttpHeaders.CONTENT_DISPOSITION)
+                .body(zipResource);
     }
 }

@@ -1,7 +1,6 @@
 package top.lll44556.codeGenerator;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import top.lll44556.codeGenerator.enums.DatabaseType;
@@ -9,14 +8,18 @@ import top.lll44556.codeGenerator.enums.LocalGenerateContentType;
 import top.lll44556.codeGenerator.service.LocalCodeGeneratorService;
 import top.lll44556.codeGenerator.vo.codeGenerator.req.LocalEntityFieldReqVo;
 import top.lll44556.codeGenerator.vo.codeGenerator.req.LocalGenerateReqVo;
+import top.lll44556.codeGenerator.vo.codeGenerator.res.LocalGenerateResVo;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Comparator;
 import java.util.List;
+import java.util.zip.ZipFile;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest(classes = CodeGeneratorTestApplication.class)
@@ -35,9 +38,6 @@ class LocalCodeGeneratorServiceTest {
             );
             COMMENT ON COLUMN public.sys_user.c_nickname IS '数据库昵称';
             """;
-
-    @TempDir
-    private Path tempDir;
 
     @Autowired
     private LocalCodeGeneratorService localCodeGeneratorService;
@@ -73,7 +73,6 @@ class LocalCodeGeneratorServiceTest {
                         new LocalEntityFieldReqVo("c_nickname", "String", "nickname", "用户昵称"),
                         new LocalEntityFieldReqVo("c_avatar_url", "String", "avatarUrl", "  用户头像  ")
                 ),
-                tempDir.toString(),
                 "",
                 "",
                 "",
@@ -83,25 +82,27 @@ class LocalCodeGeneratorServiceTest {
                 ""
         );
 
-        localCodeGeneratorService.generate(request);
+        LocalGenerateResVo generateResult = localCodeGeneratorService.generate(request);
+        Path generatedDirectory = Path.of(generateResult.getGeneratedDirectory());
+        Path zipFilePath = Path.of(generateResult.getZipFilePath());
 
-        String entityContent = readGeneratedJava("top.lll44556.demo.entity", "UserEntity");
-        String reqVoContent = readGeneratedJava("top.lll44556.demo.vo.req", "UserSaveReqVO");
-        String listReqVoContent = readGeneratedJava("top.lll44556.demo.vo.req", "UserListReqVO");
-        String resVoContent = readGeneratedJava("top.lll44556.demo.vo.res", "UserResVO");
-        String beanContent = readGeneratedJava("top.lll44556.demo.service.bean", "UserBean");
-        String controllerContent = readGeneratedJava("top.lll44556.demo.controller", "UserController");
-        String convertContent = readGeneratedJava("top.lll44556.demo.convert", "UserConvert");
-        String repositoryContent = readGeneratedJava("top.lll44556.demo.repository", "UserRepository");
-        String serviceContent = readGeneratedJava("top.lll44556.demo.service", "UserService");
-        String serviceImplContent = readGeneratedJava("top.lll44556.demo.service.impl", "UserServiceImpl");
-        String nativeQueryContent = readGeneratedJava("top.lll44556.demo.service.nativequery", "UserNativeQuery");
-        String nativeQueryPostgreSQLContent = readGeneratedJava(
+        String entityContent = readGeneratedJava(generatedDirectory, "top.lll44556.demo.entity", "UserEntity");
+        String reqVoContent = readGeneratedJava(generatedDirectory, "top.lll44556.demo.vo.req", "UserSaveReqVO");
+        String listReqVoContent = readGeneratedJava(generatedDirectory, "top.lll44556.demo.vo.req", "UserListReqVO");
+        String resVoContent = readGeneratedJava(generatedDirectory, "top.lll44556.demo.vo.res", "UserResVO");
+        String beanContent = readGeneratedJava(generatedDirectory, "top.lll44556.demo.service.bean", "UserBean");
+        String controllerContent = readGeneratedJava(generatedDirectory, "top.lll44556.demo.controller", "UserController");
+        String convertContent = readGeneratedJava(generatedDirectory, "top.lll44556.demo.convert", "UserConvert");
+        String repositoryContent = readGeneratedJava(generatedDirectory, "top.lll44556.demo.repository", "UserRepository");
+        String serviceContent = readGeneratedJava(generatedDirectory, "top.lll44556.demo.service", "UserService");
+        String serviceImplContent = readGeneratedJava(generatedDirectory, "top.lll44556.demo.service.impl", "UserServiceImpl");
+        String nativeQueryContent = readGeneratedJava(generatedDirectory, "top.lll44556.demo.service.nativequery", "UserNativeQuery");
+        String nativeQueryPostgreSQLContent = readGeneratedJava(generatedDirectory,
                 "top.lll44556.demo.service.nativequery.postgresql", "UserNativeQueryPostgreSQL");
-        String pageResultContent = readGeneratedJava("common.lll44556.top.page", "PageResult");
-        String paginationContent = readGeneratedJava("common.lll44556.top.page", "Pagination");
-        String paginationReqVoContent = readGeneratedJava("common.lll44556.top.page", "PaginationReqVO");
-        String pageUtilContent = readGeneratedJava("common.lll44556.top.util", "PageUtil");
+        String pageResultContent = readGeneratedJava(generatedDirectory, "common.lll44556.top.page", "PageResult");
+        String paginationContent = readGeneratedJava(generatedDirectory, "common.lll44556.top.page", "Pagination");
+        String paginationReqVoContent = readGeneratedJava(generatedDirectory, "common.lll44556.top.page", "PaginationReqVO");
+        String pageUtilContent = readGeneratedJava(generatedDirectory, "common.lll44556.top.util", "PageUtil");
         String today = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
 
         // Entity 和 Bean 通过基类承载公共字段，生成模板不能重复声明这些通用成员。
@@ -116,7 +117,7 @@ class LocalCodeGeneratorServiceTest {
         assertNoCommonFieldDeclarationExceptId(reqVoContent);
         assertNoCommonFieldDeclaration(resVoContent);
 
-        // 本地生成的 Java 文件需要统一带上文件头信息，便于落盘后追踪来源。
+        // 离线生成的 Java 文件需要统一带上文件头信息，便于落盘后追踪来源。
         assertGeneratedClassHeader(entityContent, "User", today);
         assertGeneratedClassHeader(beanContent, "User", today);
         assertGeneratedClassHeader(reqVoContent, "User", today);
@@ -224,7 +225,7 @@ class LocalCodeGeneratorServiceTest {
         assertGeneratedFieldComment(beanContent, "用户头像");
         assertTrue(!beanContent.contains("@Schema(title = \"  用户头像  \")"));
 
-        // Convert 使用本地生成的 SaveReqVO 命名，并要求列表转换方法统一以 List 作为后缀。
+        // Convert 使用离线生成的 SaveReqVO 命名，并要求列表转换方法统一以 List 作为后缀。
         assertGeneratedClassHeader(convertContent, "User 转换器", today);
         assertTrue(convertContent.contains("@Mapper(componentModel = \"spring\")"));
         assertTrue(convertContent.contains("UserConvert INSTANCE = Mappers.getMapper(UserConvert.class);"));
@@ -273,11 +274,44 @@ class LocalCodeGeneratorServiceTest {
         assertTrue(pageUtilContent.contains("package common.lll44556.top.util;"));
         assertTrue(pageUtilContent.contains("public static Pageable checkPage(Integer page, Integer size)"));
         assertTrue(pageUtilContent.contains("return PageRequest.of(safePage - 1, safeSize);"));
+
+        Path backendRootDirectory = Path.of(System.getProperty("user.dir")).toAbsolutePath().normalize();
+        assertTrue(generatedDirectory.startsWith(backendRootDirectory.resolve("file")));
+        assertTrue(Files.isDirectory(generatedDirectory));
+        assertTrue(Files.isRegularFile(zipFilePath));
+        assertTrue(generateResult.getZipFileName().matches("User_\\d{17}\\.zip"));
+        assertFalse(generateResult.getZipFileName().contains("Entity"));
+        assertZipEntryExists(zipFilePath, "top/lll44556/demo/entity/UserEntity.java");
+
+        deleteIfExists(generatedDirectory);
+        Files.deleteIfExists(zipFilePath);
     }
 
-    private String readGeneratedJava(String packageName, String className) throws Exception {
-        Path javaFile = tempDir.resolve(Path.of(packageName.replace(".", "/"))).resolve(className + ".java");
+    private String readGeneratedJava(Path generatedDirectory, String packageName, String className) throws Exception {
+        Path javaFile = generatedDirectory.resolve(Path.of(packageName.replace(".", "/"))).resolve(className + ".java");
         return Files.readString(javaFile, StandardCharsets.UTF_8);
+    }
+
+    private void assertZipEntryExists(Path zipFilePath, String entryName) throws Exception {
+        try (ZipFile zipFile = new ZipFile(zipFilePath.toFile(), StandardCharsets.UTF_8)) {
+            assertTrue(zipFile.getEntry(entryName) != null);
+        }
+    }
+
+    private void deleteIfExists(Path directory) throws Exception {
+        if (!Files.exists(directory)) {
+            return;
+        }
+
+        Files.walk(directory)
+                .sorted(Comparator.reverseOrder())
+                .forEach(path -> {
+                    try {
+                        Files.deleteIfExists(path);
+                    } catch (Exception e) {
+                        throw new IllegalStateException("测试生成文件清理失败: " + path, e);
+                    }
+                });
     }
 
     private void assertNoCommonFieldDeclaration(String content) {

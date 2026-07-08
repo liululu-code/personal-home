@@ -1,6 +1,16 @@
 // request.ts
 import axios, { type InternalAxiosRequestConfig } from 'axios'
 
+declare module 'axios' {
+  export interface AxiosRequestConfig {
+    rawResponse?: boolean
+  }
+
+  export interface InternalAxiosRequestConfig {
+    rawResponse?: boolean
+  }
+}
+
 const apiBaseURL = import.meta.env.VITE_API_BASE_URL
 
 const request = axios.create({
@@ -28,6 +38,9 @@ request.interceptors.request.use(
   },
 )
 request.interceptors.response.use((response) => {
+  if (response.config.rawResponse) {
+    return response
+  }
   return response.data
 })
 export default request

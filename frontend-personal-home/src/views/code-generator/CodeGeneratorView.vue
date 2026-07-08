@@ -3,7 +3,7 @@
     <aside class="output-nav">
       <el-menu :default-active="activeMenu" @select="handleMenuSelect">
         <el-menu-item index="LOCAL_GENERATE">
-          本地生成
+          离线生成
         </el-menu-item>
         <el-menu-item
           v-for="item in outputTypeOptions"
@@ -64,12 +64,6 @@
             <el-select v-model="localForm.databaseType">
               <el-option label="PostgreSQL" value="POSTGRESQL" />
             </el-select>
-          </el-form-item>
-          <el-form-item label="本地生成文件夹">
-            <el-input
-              v-model="localForm.outputDirectory"
-              placeholder="请输入本地生成文件夹，例如 D:\codeGenerator"
-            />
           </el-form-item>
           <el-form-item label="Entity 包名">
             <el-input
@@ -136,7 +130,7 @@
           />
         </el-form-item>
 
-        <el-form-item label="本地生成内容">
+        <el-form-item label="离线生成内容">
           <el-checkbox-group v-model="localForm.contentTypes" class="content-type-group">
             <el-checkbox
               v-for="item in localContentTypeOptions"
@@ -153,7 +147,7 @@
             解读字段
           </el-button>
           <el-button :loading="generatingLocal" type="primary" @click="handleLocalGenerate">
-            本地生成
+            离线生成
           </el-button>
         </div>
       </el-form>
@@ -215,7 +209,7 @@
       </section>
 
       <section class="result-section">
-        <div class="result-title">本地生成结果</div>
+        <div class="result-title">离线生成结果</div>
         <el-input
           v-model="localGenerateResult"
           :autosize="{ minRows: 6, maxRows: 12 }"
@@ -305,7 +299,6 @@ const localForm = reactive<LocalGenerateRequest>({
   entityClassName: '',
   contentTypes: ['ENTITY', 'REPOSITORY', 'SERVICE', 'SERVICE_IMPL', 'CONTROLLER'],
   entityFields: [],
-  outputDirectory: 'D:\\codeGenerator',
   responseClassPackageName: 'top.lll44556.common.util',
   responseClassName: 'Result',
   responseSuccessMethodName: 'success',
@@ -354,7 +347,7 @@ const handleParseLocalTable = async () => {
 
   parsingLocalTable.value = true
   try {
-    // 本地生成先只做字段结构解读，复杂的字段注释、Java 类型映射和模板变量后续在后端统一补齐。
+    // 离线生成先只做字段结构解读，复杂的字段注释、Java 类型映射和模板变量后续在后端统一补齐。
     const response = await parseLocalTable({
       databaseType: localForm.databaseType,
       createTableSql: localForm.createTableSql,
@@ -373,10 +366,6 @@ const handleLocalGenerate = async () => {
     ElMessage.warning('请输入数据库建表 SQL')
     return
   }
-  if (!localForm.outputDirectory.trim()) {
-    ElMessage.warning('请输入本地生成文件夹')
-    return
-  }
   if (!localForm.packageName.trim()) {
     ElMessage.warning('请输入 Entity 包名')
     return
@@ -386,7 +375,7 @@ const handleLocalGenerate = async () => {
     return
   }
   if (localForm.contentTypes.length === 0) {
-    ElMessage.warning('请选择至少一种本地生成内容')
+    ElMessage.warning('请选择至少一种离线生成内容')
     return
   }
   if (editableLocalColumns.value.length === 0) {
@@ -400,7 +389,7 @@ const handleLocalGenerate = async () => {
 
   generatingLocal.value = true
   try {
-    // 当前后端只返回计划生成结果，真实文件写入逻辑保留 TODO，先确保前后端请求链路稳定。
+    // 离线生成由后端固定落盘并返回 zip，前端只负责提交字段配置和触发下载。
     const entityFields: LocalEntityField[] = editableLocalColumns.value.map((column) => ({
       columnName: column.columnName,
       entityType: column.entityType.trim(),
@@ -408,14 +397,42 @@ const handleLocalGenerate = async () => {
       entityComment: column.comment?.trim() || '',
     }))
     const response = await generateLocalCode({ ...localForm, entityFields })
-    localGenerateResult.value = [
-      response.data.message,
-      `输出目录：${response.data.outputDirectory}`,
-      ...response.data.plannedFiles,
-    ].join('\n')
+    const fileName = resolveDownloadFileName(response.headers['content-disposition'])
+    downloadBlob(response.data, fileName)
+    localGenerateResult.value = `离线生成完成，已下载 ${fileName}`
+    ElMessage.success('离线生成完成')
   } finally {
     generatingLocal.value = false
   }
+}
+
+const resolveDownloadFileName = (contentDisposition: string | undefined) => {
+  if (!contentDisposition) {
+    return `${localForm.entityClassName.replace(/Entity$/, '') || 'code'}_${Date.now()}.zip`
+  }
+
+  const utf8FileNameMatch = contentDisposition.match(/filename\*=UTF-8''([^;]+)/i)
+  if (utf8FileNameMatch?.[1]) {
+    return decodeURIComponent(utf8FileNameMatch[1])
+  }
+
+  const fileNameMatch = contentDisposition.match(/filename="?([^";]+)"?/i)
+  if (fileNameMatch?.[1]) {
+    return fileNameMatch[1]
+  }
+
+  return `${localForm.entityClassName.replace(/Entity$/, '') || 'code'}_${Date.now()}.zip`
+}
+
+const downloadBlob = (blob: Blob, fileName: string) => {
+  const objectUrl = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = objectUrl
+  link.download = fileName
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+  URL.revokeObjectURL(objectUrl)
 }
 </script>
 
