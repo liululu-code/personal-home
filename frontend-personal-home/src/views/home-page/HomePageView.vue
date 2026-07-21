@@ -1,12 +1,10 @@
 <template>
   <div>
-    个人主页页面
+    个人主页
   </div>
 </template>
 
-<script setup lang="ts">
-
-</script>
+<script setup lang="ts"></script>
 
 <style lang="scss" scoped>
 

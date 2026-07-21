@@ -30,6 +30,24 @@ const router = createRouter({
           component: () => import('../views/code-generator/CodeGeneratorView.vue'),
         },
         {
+          path: 'learn-demo',
+          name: 'learn-demo',
+          // component: () => import('../views/learn-demo/QRView.vue'),
+          redirect: '/learn-demo/qr-demo',
+          children: [
+            {
+              path: 'qr-demo',
+              name: 'qr-demo',
+              component: () => import('../views/learn-demo/QRView.vue'),
+            },
+            {
+              path: 'blog-demo',
+              name: 'blog-demo',
+              component: () => import('../views/learn-demo/BlogView.vue'),
+            },
+          ]
+        },
+        {
           path: 'website-guide',
           name: 'website-guide',
           component: () => import('../views/web-guide/WebsiteGuideView.vue'),

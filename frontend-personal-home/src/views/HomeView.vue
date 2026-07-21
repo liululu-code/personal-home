@@ -13,13 +13,13 @@
 </template>
 
 <script setup lang="ts">
-import { RouterView } from 'vue-router'
-import FooterComponent from '@/components/FooterComponent.vue'
-import HeaderComponent from '@/components/HeaderComponent.vue'
+import FooterComponent from '@/components/FooterComponent.vue';
+import HeaderComponent from '@/components/HeaderComponent.vue';
+import { RouterView } from 'vue-router';
+
+
 </script>
 
 <style scoped lang="scss">
-.page-container {
-  min-height: 100vh;
-}
+
 </style>
