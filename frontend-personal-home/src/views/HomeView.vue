@@ -21,5 +21,11 @@ import { RouterView } from 'vue-router';
 </script>
 
 <style scoped lang="scss">
+.page-container {
+  min-height: 100dvh;
 
+  > .el-main {
+    display: flex;
+  }
+}
 </style>

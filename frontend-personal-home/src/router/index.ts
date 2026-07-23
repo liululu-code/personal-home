@@ -45,6 +45,11 @@ const router = createRouter({
               name: 'blog-demo',
               component: () => import('../views/learn-demo/BlogView.vue'),
             },
+            {
+              path: 'social-link-demo',
+              name: 'social-link-demo',
+              component: () => import('../views/learn-demo/SocialLink.vue'),
+            },
           ]
         },
         {

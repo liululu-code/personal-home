@@ -13,8 +13,9 @@
     <el-menu-item index="website-guide">网址导航</el-menu-item>
     <el-sub-menu index="learn-demo">
       <template #title>学习Demo</template>
-      <el-menu-item index="qr-demo">验证码</el-menu-item>
-      <el-menu-item index="blog-demo">第二个</el-menu-item>
+      <el-menu-item index="qr-demo">验证码卡片</el-menu-item>
+      <el-menu-item index="blog-demo">博客卡片</el-menu-item>
+      <el-menu-item index="social-link-demo">社交卡片</el-menu-item>
     </el-sub-menu>
 
     <el-menu-item index="contact-me">联系我</el-menu-item>
