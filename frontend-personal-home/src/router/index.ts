@@ -32,30 +32,40 @@ const router = createRouter({
         {
           path: 'learn-demo',
           name: 'learn-demo',
-          // component: () => import('../views/learn-demo/QRView.vue'),
+          // component: () => import('@/views/learn-demo/QRView.vue'),
           redirect: '/learn-demo/qr-demo',
           children: [
             {
               path: 'qr-demo',
               name: 'qr-demo',
-              component: () => import('../views/learn-demo/QRView.vue'),
+              component: () => import('@/views/learn-demo/QRView.vue'),
             },
             {
               path: 'blog-demo',
               name: 'blog-demo',
-              component: () => import('../views/learn-demo/BlogView.vue'),
+              component: () => import('@/views/learn-demo/BlogView.vue'),
             },
             {
               path: 'social-link-demo',
               name: 'social-link-demo',
-              component: () => import('../views/learn-demo/SocialLink.vue'),
+              component: () => import('@/views/learn-demo/SocialLink.vue'),
+            },
+            {
+              path: 'result-summary-demo',
+              name: 'result-summary-demo',
+              component: () => import('@/views/learn-demo/ResultSummaryView.vue'),
+            },
+            {
+              path: 'grid-landing-page-demo',
+              name: 'grid-landing-page-demo',
+              component: () => import('@/views/learn-demo/GridLandingPageView.vue'),
             },
           ]
         },
         {
           path: 'website-guide',
           name: 'website-guide',
-          component: () => import('../views/web-guide/WebsiteGuideView.vue'),
+          component: () => import('@/views/web-guide/WebsiteGuideView.vue'),
         },
       ],
     },

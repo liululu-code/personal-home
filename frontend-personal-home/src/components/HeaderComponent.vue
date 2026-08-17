@@ -16,6 +16,8 @@
       <el-menu-item index="qr-demo">验证码卡片</el-menu-item>
       <el-menu-item index="blog-demo">博客卡片</el-menu-item>
       <el-menu-item index="social-link-demo">社交卡片</el-menu-item>
+      <el-menu-item index="result-summary-demo">结果总结</el-menu-item>
+      <el-menu-item index="grid-landing-page-demo">栅格页面</el-menu-item>
     </el-sub-menu>
 
     <el-menu-item index="contact-me">联系我</el-menu-item>
