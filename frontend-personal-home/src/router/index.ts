@@ -60,6 +60,16 @@ const router = createRouter({
               name: 'grid-landing-page-demo',
               component: () => import('@/views/learn-demo/GridLandingPageView.vue'),
             },
+            {
+              path: 'four-card-demo',
+              name: 'four-card-demo',
+              component: () => import('@/views/learn-demo/FourCardView.vue'),
+            },
+            {
+              path: 'hotel-booking-confirmation-page-demo',
+              name: 'hotel-booking-confirmation-page-demo',
+              component: () => import('@/views/learn-demo/HotelBookingConfirmationPageView.vue'),
+            },
           ]
         },
         {

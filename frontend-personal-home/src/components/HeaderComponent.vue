@@ -18,6 +18,8 @@
       <el-menu-item index="social-link-demo">社交卡片</el-menu-item>
       <el-menu-item index="result-summary-demo">结果总结</el-menu-item>
       <el-menu-item index="grid-landing-page-demo">栅格页面</el-menu-item>
+      <el-menu-item index="four-card-demo">四卡片</el-menu-item>
+      <el-menu-item index="hotel-booking-confirmation-page-demo">酒店预订确认页</el-menu-item>
     </el-sub-menu>
 
     <el-menu-item index="contact-me">联系我</el-menu-item>
