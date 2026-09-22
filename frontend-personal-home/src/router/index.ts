@@ -68,7 +68,7 @@ const router = createRouter({
             {
               path: 'hotel-booking-confirmation-page-demo',
               name: 'hotel-booking-confirmation-page-demo',
-              component: () => import('@/views/learn-demo/HotelBookingConfirmationPageView.vue'),
+              component: () => import('@/views/learn-demo/HotelBookingConfirmationPageView/HotelBookingConfirmationPageView.vue'),
             },
           ]
         },
