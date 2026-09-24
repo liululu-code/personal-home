@@ -1,0 +1,7 @@
+personal_home.sys_user:
+  - id: USER_ID_1
+    c_nickname: USER_NAME_1
+    c_avatar_url: USER_AVATAR_URL_1
+    c_real_name: USER_REAL_NAME_1
+    c_status: 1
+    c_last_login_time: 1790241946242

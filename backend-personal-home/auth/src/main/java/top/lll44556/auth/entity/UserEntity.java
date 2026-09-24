@@ -17,7 +17,7 @@ import org.hibernate.annotations.ColumnDefault;
         @AttributeOverride(name = "createdTime", column = @Column(name = "created_time")),
         @AttributeOverride(name = "operator", column = @Column(name = "operator", length = 200))
 })
-public class User extends BaseEntity {
+public class UserEntity extends BaseEntity {
     /**
      * 用户昵称
      */

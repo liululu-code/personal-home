@@ -11,8 +11,8 @@ import java.io.Serializable;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Schema(title = "基础业务 Bean")
-public class BaseBean implements Serializable {
+@Schema(title = "基础业务 BO")
+public class BaseBO implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 

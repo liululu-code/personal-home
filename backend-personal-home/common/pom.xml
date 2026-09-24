@@ -64,5 +64,26 @@
         </dependency>
 
 
+        <dependency>
+            <groupId>com.github.database-rider</groupId>
+            <artifactId>rider-junit5</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-simple</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!--            MapStruct-->
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct-processor</artifactId>
+        </dependency>
+
     </dependencies>
 </project>

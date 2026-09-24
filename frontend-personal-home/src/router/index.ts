@@ -68,8 +68,14 @@ const router = createRouter({
             {
               path: 'hotel-booking-confirmation-page-demo',
               name: 'hotel-booking-confirmation-page-demo',
-              component: () => import('@/views/learn-demo/HotelBookingConfirmationPageView/HotelBookingConfirmationPageView.vue'),
+              component: () => import('@/views/learn-demo/hotel-booking-confirmation-page/HotelBookingConfirmationPageView.vue'),
             },
+            {
+              path: 'file-transfer-card',
+              name: 'file-transfer-card',
+              component: () => import('@/views/learn-demo/file-transfer-card/FileTransferCardView.vue'),
+            },
+
           ]
         },
         {
